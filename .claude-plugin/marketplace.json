@@ -1,0 +1,12 @@
+{
+  "name": "outils-recherche-emploi",
+  "description": "Outils Claude pour cadres en recherche d'emploi : Radar candidatures (collecte et classement des offres, suivi, lettres et CV adaptés).",
+  "owner": { "name": "Radar candidatures" },
+  "plugins": [
+    {
+      "name": "radar-candidatures",
+      "source": "./plugins/radar-candidatures",
+      "description": "Tableau de bord de recherche d'emploi : installation guidée, alertes LinkedIn/Apec/Indeed, tournée de collecte, classement A/B/C, suivi des candidatures, lettres et CV adaptés."
+    }
+  ]
+}

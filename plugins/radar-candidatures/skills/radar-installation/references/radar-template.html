@@ -1,0 +1,979 @@
+<title>Radar candidatures</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+
+/* Layout: dossier de veille — en-tête compact, barre de filtres collante, table dense, tiroir latéral pour générer lettre et CV */
+:root{
+  --bg:#f3f4f2; --surface:#ffffff; --ink:#18201f; --muted:#5d6967; --line:#d9dedc;
+  --accent:#0f6b5c; --accent-ink:#ffffff; --accent-soft:#e1efeb;
+  --tA:#0f6b5c; --tA-bg:#dcefe9; --tB:#8a5a00; --tB-bg:#f6ead0; --tC:#6b7372; --tC-bg:#e8ebea;
+  --warn:#9b3d1a;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111615; --surface:#182020; --ink:#e6ecea; --muted:#9aa8a5; --line:#2b3634;
+  --accent:#4cc2a8; --accent-ink:#0b1513; --accent-soft:#1d3530;
+  --tA:#6fd6bd; --tA-bg:#173a33; --tB:#e8b85a; --tB-bg:#3a2e14; --tC:#a3adab; --tC-bg:#262f2e; --warn:#f08a62; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111615; --surface:#182020; --ink:#e6ecea; --muted:#9aa8a5; --line:#2b3634;
+  --accent:#4cc2a8; --accent-ink:#0b1513; --accent-soft:#1d3530;
+  --tA:#6fd6bd; --tA-bg:#173a33; --tB:#e8b85a; --tB-bg:#3a2e14; --tC:#a3adab; --tC-bg:#262f2e; --warn:#f08a62; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.5}
+.wrap{max-width:1280px;margin:0 auto;padding-inline:20px;padding-block:28px 60px}
+header{display:flex;flex-wrap:wrap;gap:16px 32px;align-items:flex-end;justify-content:space-between}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(26px,4vw,38px);line-height:1.05;margin:0;text-wrap:balance;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:6px 0 0;max-width:62ch}
+.stats{display:flex;gap:20px;flex-wrap:wrap}
+.stat{display:flex;flex-direction:column}
+.stat b{font-family:var(--f-display);font-size:26px;line-height:1;font-variant-numeric:tabular-nums}
+.stat-hl{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 12px;cursor:pointer;color:var(--ink);font:inherit;text-align:left}
+.stat-hl b{color:var(--accent)}
+.stat-hl:hover{border-color:var(--accent)}
+.stat-sep{width:1px;align-self:stretch;background:var(--line)}
+.stat span{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding-block:14px;margin-top:20px;border-bottom:1px solid var(--line)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:transparent;color:var(--ink);font:500 13px var(--f-body);padding:7px 11px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+input[type=search],select{font:400 13px var(--f-body);padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
+input[type=search]{flex:1 1 200px;min-width:0}
+label.chk{display:inline-flex;gap:6px;align-items:center;font-size:13px;color:var(--muted);cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tablebox{overflow-x:auto;margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+table{width:100%;border-collapse:collapse;min-width:900px}
+th{font:600 11px var(--f-body);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:var(--accent-soft)}
+.tier{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:6px;font:700 13px var(--f-display)}
+.tA{background:var(--tA-bg);color:var(--tA)} .tB{background:var(--tB-bg);color:var(--tB)} .tC{background:var(--tC-bg);color:var(--tC)}
+.ttl{font-weight:600;color:var(--ink);text-decoration:none}
+.ttl:hover{text-decoration:underline}
+.co{color:var(--muted);font-size:13px}
+.note{color:var(--muted);font-size:12.5px;margin-top:3px;max-width:52ch}
+.num{font-family:var(--f-mono);font-size:12.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill{display:inline-block;font-size:11.5px;padding:2px 8px;border-radius:99px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.pill.loc{border-color:var(--accent);color:var(--accent)}
+.src{display:flex;gap:4px;flex-wrap:wrap}
+.src a{font:500 11px var(--f-mono);padding:2px 6px;border-radius:4px;background:var(--tC-bg);color:var(--ink);text-decoration:none}
+.src a:hover{background:var(--accent);color:var(--accent-ink)}
+.acts{display:flex;gap:6px;white-space:nowrap}
+.btn{font:500 12.5px var(--f-body);border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:5px 10px;border-radius:7px;cursor:pointer}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{color:var(--accent-ink);filter:brightness(1.08)}
+.btn:disabled{opacity:.5;cursor:default}
+.status{font-size:12px}
+.empty{padding:28px;text-align:center;color:var(--muted)}
+.foot{color:var(--muted);font-size:12.5px;margin-top:14px;max-width:90ch}
+/* Drawer */
+.scrim{position:fixed;inset:0;background:rgba(10,15,14,.45);z-index:20}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(720px,100%);background:var(--surface);z-index:21;display:flex;flex-direction:column;border-left:1px solid var(--line);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.dh{padding:18px 20px 12px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:flex-start;justify-content:space-between}
+.dh h2{font-family:var(--f-display);font-size:20px;margin:0;line-height:1.2;text-wrap:balance}
+.db{padding:16px 20px;overflow-y:auto;display:flex;flex-direction:column;gap:14px;flex:1;min-height:0}
+.db > *{flex-shrink:0}
+.out{overflow-wrap:anywhere}
+.lbl{font:600 11px var(--f-body);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+textarea{width:100%;box-sizing:border-box;min-height:130px;font:400 13px/1.5 var(--f-body);padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);resize:vertical}
+.hint{font-size:12.5px;color:var(--muted)}
+.hint.warn{color:var(--warn)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.out{white-space:pre-wrap;font:400 13.5px/1.6 var(--f-body);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:14px;min-height:120px}
+.privnote{border:1px dashed var(--line);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--muted);white-space:pre-wrap}
+.privnote .lbl{margin-bottom:4px}
+.tag{font:600 10.5px var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-left:6px}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form .full{grid-column:1/-1}
+.form input,.form select{width:100%;box-sizing:border-box;font:400 13px var(--f-body);padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+@media (max-width:560px){.form{grid-template-columns:1fr}}
+tr.grp td{background:var(--bg);font:600 11px var(--f-body);text-transform:uppercase;letter-spacing:.08em;color:var(--accent);padding:8px 12px;cursor:default}
+tr.grp td span{text-transform:none;letter-spacing:0;font-weight:400;color:var(--muted)}
+tr.grp:hover{background:transparent}
+tr.new td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
+td.dates{white-space:nowrap;font-size:12px}
+.dl{display:flex;align-items:center;gap:6px;line-height:1.9}
+.dl span{color:var(--muted);min-width:58px}
+.dl b{font:500 12.5px var(--f-mono);color:var(--ink)}
+.dl i{color:var(--muted)}
+.dl.on span{color:var(--accent);font-weight:600}
+.dl input[type=date]{font:500 12px var(--f-mono);padding:2px 4px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink)}
+.btn.danger{color:var(--warn);border-color:var(--warn)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+@media (max-width:640px){.wrap{padding-inline:16px}.stats{gap:14px}}
+@media (prefers-reduced-motion:no-preference){.drawer{animation:slide .18s ease-out}@keyframes slide{from{transform:translateX(24px);opacity:.6}to{transform:none;opacity:1}}}
+[hidden]{display:none!important}
+.setup{margin-top:18px;border:1px solid var(--tB);background:var(--tB-bg);color:var(--ink);border-radius:10px;padding:12px 16px;display:flex;flex-direction:column;gap:4px}
+.setup b{color:var(--tB)}
+code{font:500 12.5px var(--f-mono);background:var(--accent-soft);padding:1px 5px;border-radius:5px}
+.fld{width:100%;box-sizing:border-box;font:400 13px var(--f-body);padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+#profDrawer textarea{font-size:12.5px}
+#profDrawer input[type=color]{width:100%;height:36px;padding:2px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+#profDrawer input[type=file]{font-size:12.5px;max-width:100%}
+</style>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Radar candidatures</h1>
+      <p class="sub" id="subline">Ton tableau de bord de recherche d'emploi : offres classées, suivi des candidatures, lettres et CV adaptés.</p>
+    </div>
+    <div class="stats" id="stats"></div>
+  </header>
+
+  <div class="setup" id="setupBanner" hidden>
+    <b>Ton radar n'est pas encore configuré.</b>
+    <span>Dans une conversation Claude, lance la commande <code>/radar-installation</code> : Claude lira ton CV et ton profil LinkedIn, fixera tes critères et remplira ce radar.</span>
+  </div>
+
+  <div class="bar" role="toolbar" aria-label="Filtres">
+    <div class="seg" id="fTier" aria-label="Rang">
+      <button data-v="all" aria-pressed="false">Tous</button>
+      <button data-v="A" aria-pressed="true">A</button>
+      <button data-v="AB" aria-pressed="false">A + B</button>
+      <button data-v="C" aria-pressed="false">C</button>
+    </div>
+    <select id="fPiste" aria-label="Piste"><option value="">Toutes les pistes</option></select>
+    <select id="fSuivi" aria-label="Suivi">
+      <option value="">Tous les suivis</option>
+      <option value="apostuler">À postuler</option>
+      <option value="postule">Postulé</option>
+      <option value="entretien">Entretien</option>
+      <option value="ecarte">Écartées + refus (masquées de la liste)</option>
+      <option value="refus">Refus uniquement</option>
+      <option value="none">Sans suivi</option>
+    </select>
+    <select id="fSort" aria-label="Trier par">
+      <option value="rang">Trier par rang</option>
+      <option value="suivi">Trier par suivi</option>
+    </select>
+    <label class="chk"><input type="checkbox" id="fLocal"> Proche de chez moi</label>
+    <label class="chk"><input type="checkbox" id="fHide"> Masquer les offres déjà postulées</label>
+    <input type="search" id="fQ" placeholder="Filtrer : titre, entreprise, ville…" aria-label="Recherche">
+    <button class="btn" id="profilOpen">Mon profil</button>
+    <button class="btn primary" id="addOpen">+ Ajouter une annonce</button>
+  </div>
+
+  <div class="tablebox">
+    <table>
+      <thead><tr>
+        <th>Rang</th><th>Offre</th><th>Piste</th><th>Lieu</th><th>Salaire</th><th>Liens</th><th>Mon suivi</th><th>Dates</th><th>Générer</th>
+      </tr></thead>
+      <tbody id="tb"></tbody>
+    </table>
+  </div>
+  <p class="foot">Les nouvelles offres s'affichent en tête pendant 3 jours ou jusqu'à ce que tu leur donnes un suivi. Les offres écartées ou refusées disparaissent de la liste (menu Suivi pour les revoir). Les lettres et CV sont générés à partir de ta base de connaissance (bouton « Mon profil »).</p>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+
+<aside class="drawer" id="drawer" hidden aria-modal="true" role="dialog" aria-labelledby="dTitle">
+  <div class="dh">
+    <div>
+      <div class="lbl" id="dKind">Lettre de motivation</div>
+      <h2 id="dTitle"></h2>
+      <div class="co" id="dCo"></div>
+    </div>
+    <button class="btn" id="dClose" aria-label="Fermer">Fermer</button>
+  </div>
+  <div class="db">
+    <div class="tabs" id="dTabs">
+      <button class="btn" data-k="lettre">Lettre de motivation</button>
+      <button class="btn" data-k="cv">CV adapté</button>
+    </div>
+    <div>
+      <label class="lbl" for="dAd">Texte de l'annonce</label>
+      <textarea id="dAd" placeholder="Ouvre l'annonce, copie la description complète et colle-la ici."></textarea>
+      <div class="hint" id="dAdHint"></div>
+    </div>
+    <div>
+      <label class="lbl" for="dExtra">Consignes en plus (facultatif, prioritaires)</label>
+      <textarea id="dExtra" style="min-height:60px" placeholder="Ex. : 400 caractères max, insister sur tel projet, version en anglais…"></textarea>
+    </div>
+    <div class="row">
+      <button class="btn primary" id="dGo">Générer</button>
+      <button class="btn" id="dStop" hidden>Arrêter</button>
+      <span class="hint" id="dMsg"></span>
+    </div>
+    <div class="out" id="dOut" aria-live="polite">Le texte généré s'affichera ici.</div>
+    <div class="privnote" id="dNote" hidden><div class="lbl">Pour toi uniquement · non copié, non téléchargé</div><div id="dNoteBody"></div></div>
+    <div class="row">
+      <button class="btn" id="dCopy" disabled>Copier</button>
+      <button class="btn primary" id="dSave" disabled hidden>Télécharger (PDF)</button>
+      <button class="btn" id="dSave2" hidden>Texte brut (.md)</button>
+    </div>
+  </div>
+</aside>
+
+<aside class="drawer" id="addDrawer" hidden aria-modal="true" role="dialog" aria-labelledby="aTitle">
+  <div class="dh">
+    <div><div class="lbl" id="aKind">Nouvelle offre</div><h2 id="aTitle">Ajouter une annonce</h2></div>
+    <button class="btn" id="aClose" aria-label="Fermer">Fermer</button>
+  </div>
+  <div class="db">
+    <div>
+      <label class="lbl" for="aUrl">Lien de l'annonce</label>
+      <input id="aUrl" type="url" class="fld" placeholder="https://www.linkedin.com/jobs/view/…">
+      <div class="row" id="aOpenRow" style="margin-top:8px" hidden><a class="btn" id="aOpenLink" href="#" target="_blank" rel="noopener">Ouvrir l'annonce ↗</a><span class="hint">Copie tout le texte de l'annonce (Ctrl+A, Ctrl+C) et colle-le ci-dessous.</span></div>
+      <div class="row" id="aQueueRow" style="margin-top:8px"><button class="btn primary" id="aQueue">Ajouter le lien seul</button><span class="hint">Claude complétera la fiche lors de ta prochaine tournée /radar.</span></div>
+    </div>
+    <div class="hint" id="aOr" style="text-align:center">ou, pour remplir tout de suite</div>
+    <div>
+      <label class="lbl" for="aAd">Texte de l'annonce</label>
+      <textarea id="aAd" placeholder="Colle ici la description complète. Elle servira aussi pour la lettre et le CV."></textarea>
+      <div class="row" style="margin-top:8px"><button class="btn" id="aFill">Remplir les champs avec Claude</button><span class="hint" id="aFillMsg"></span></div>
+    </div>
+    <div class="form">
+      <div class="full"><label class="lbl" for="aT">Intitulé *</label><input id="aT"></div>
+      <div><label class="lbl" for="aCo">Entreprise *</label><input id="aCo"></div>
+      <div><label class="lbl" for="aLoc">Lieu</label><input id="aLoc" placeholder="Ex. : Lyon · hybride"></div>
+      <div><label class="lbl" for="aSal">Salaire</label><input id="aSal" placeholder="Ex. : 55–65 k€"></div>
+      <div><label class="lbl" for="aDate">Date de publication</label><input id="aDate" placeholder="Ex. : 07/10"></div>
+      <div><label class="lbl" for="aP">Piste</label><select id="aP"></select></div>
+      <div><label class="lbl" for="aR">Rang</label><select id="aR"><option value="A">A · priorité</option><option value="B" selected>B · à examiner</option><option value="C">C · écartée</option></select></div>
+      <div class="full"><label class="lbl" for="aNote">Note</label><input id="aNote" placeholder="Pourquoi cette offre, points à vérifier…"></div>
+    </div>
+    <div class="row"><button class="btn primary" id="aSave">Ajouter au radar</button><span class="hint" id="aMsg"></span></div>
+  </div>
+</aside>
+
+<aside class="drawer" id="profDrawer" hidden aria-modal="true" role="dialog" aria-labelledby="pTitle">
+  <div class="dh">
+    <div><div class="lbl">Base de connaissance</div><h2 id="pTitle">Mon profil</h2></div>
+    <button class="btn" id="pClose" aria-label="Fermer">Fermer</button>
+  </div>
+  <div class="db">
+    <p class="hint">Claude écrit toutes tes lettres et tous tes CV à partir de cette base, et de rien d'autre. Garde-la complète et exacte. Pour la compléter en conversation, utilise <code>/radar-profil</code> dans Claude.</p>
+    <div class="form">
+      <div><label class="lbl" for="pNom">Nom affiché</label><input id="pNom"></div>
+      <div><label class="lbl" for="pTitre">Titre / métier</label><input id="pTitre"></div>
+      <div><label class="lbl" for="pEmail">E-mail</label><input id="pEmail"></div>
+      <div><label class="lbl" for="pTel">Téléphone</label><input id="pTel"></div>
+      <div><label class="lbl" for="pVille">Ville (facultatif sur le CV)</label><input id="pVille"></div>
+      <div><label class="lbl" for="pCouleur">Couleur du CV</label><input id="pCouleur" type="color" value="#0f6b5c"></div>
+      <div class="full"><label class="lbl" for="pPhoto">Photo du CV (facultative)</label><input id="pPhoto" type="file" accept="image/*"><div class="row"><img id="pPhotoPrev" alt="" hidden style="width:64px;height:64px;border-radius:50%;object-fit:cover"><button class="btn" id="pPhotoDel" hidden>Retirer la photo</button></div></div>
+    </div>
+    <div>
+      <label class="lbl" for="pSource">Parcours complet (CV + LinkedIn fusionnés)</label>
+      <textarea id="pSource" style="min-height:260px"></textarea>
+    </div>
+    <div>
+      <label class="lbl" for="pAjouts">Compléments ajoutés en conversation</label>
+      <textarea id="pAjouts" style="min-height:100px" placeholder="Une précision par ligne : chiffres, missions, outils, langues…"></textarea>
+    </div>
+    <div>
+      <label class="lbl" for="pCriteres">Critères de recherche</label>
+      <textarea id="pCriteres" style="min-height:120px" placeholder="Zone, rayon, salaire plancher, contrat, niveau visé, pistes métier, exclusions…"></textarea>
+    </div>
+    <div class="form">
+      <div class="full"><label class="lbl" for="pPistes">Pistes métier (séparées par des virgules)</label><input id="pPistes"></div>
+      <div class="full"><label class="lbl" for="pLocal">Villes « proches de chez moi » (séparées par des virgules)</label><input id="pLocal"></div>
+    </div>
+    <div class="row"><button class="btn primary" id="pSave">Enregistrer le profil</button><span class="hint" id="pMsg"></span></div>
+  </div>
+</aside>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+// Radar candidatures : modèle générique (aucune donnée personnelle dans le code).
+// Données : db "profil/main", "profil/photo", "offres/*", "suivi/*", "generations/*", "meta/collecte".
+// Repli : localStorage si la base n'est pas disponible.
+
+// ---------- état ----------
+const LS = "radar-cand-v1";
+let store = {};
+try { store = JSON.parse(localStorage.getItem(LS) || "{}") || {}; } catch (e) { store = {}; }
+const save = () => { try { localStorage.setItem(LS, JSON.stringify(store)); } catch (e) {} };
+
+let PROF = {}, PHOTO = "", SUIVI = {}, CUSTOM = [], GEN = {};
+let DB = null, profLoaded = false;
+const ALL = () => CUSTOM;
+const S_OF = j => SUIVI[j.docId] || {};
+const stOf = j => S_OF(j).st || "";
+const adOf = j => S_OF(j).ad || j.ad || "";
+let fTier = "A";
+try { const v = localStorage.getItem(LS + "-tier"); if (v) fTier = v; } catch (e) {}
+
+const $ = s => document.querySelector(s);
+const tb = $("#tb");
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const splitList = s => String(s || "").split(/[,;\n]/).map(x => x.trim()).filter(Boolean);
+const PISTES = () => (Array.isArray(PROF.pistes) && PROF.pistes.length) ? PROF.pistes : ["Général"];
+const localRe = () => {
+  const L = Array.isArray(PROF.local) ? PROF.local.filter(Boolean) : [];
+  if (!L.length) return null;
+  return new RegExp(L.map(x => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|"), "i");
+};
+const isLocal = j => { const r = localRe(); return !!(r && r.test(j.loc || "")); };
+const PRENOM = () => String(PROF.nom || "").trim().split(/\s+/)[0] || "le candidat";
+const NOM = () => String(PROF.nom || "").trim() || "Candidat";
+
+// ---------- écriture suivi ----------
+function setSuivi(docId, patch){
+  SUIVI[docId] = Object.assign({}, SUIVI[docId], patch);
+  if (DB) DB.collection("suivi").doc(docId).set(SUIVI[docId]).catch(() => {});
+  else { store.suivi = SUIVI; save(); }
+}
+
+// ---------- profil : affichage ----------
+function applyProfile(){
+  $("#setupBanner").hidden = !profLoaded || !!(PROF.source && PROF.source.trim().length > 200);
+  if (PROF.nom) $("#subline").textContent = "Radar de " + PROF.nom + (PROF.titre ? " · " + PROF.titre : "") + " : offres classées, suivi des candidatures, lettres et CV adaptés.";
+  const keep = $("#fPiste").value;
+  $("#fPiste").innerHTML = `<option value="">Toutes les pistes</option>` + PISTES().map(p => `<option>${esc(p)}</option>`).join("");
+  if (PISTES().includes(keep)) $("#fPiste").value = keep;
+  $("#aP").innerHTML = PISTES().map(p => `<option>${esc(p)}</option>`).join("");
+  $("#fLocal").parentElement.hidden = !localRe();
+  if (PROF.couleur) document.documentElement.style.setProperty("--cv", PROF.couleur);
+}
+
+// ---------- stats ----------
+function stats(){
+  const sc = s => ALL().filter(j => stOf(j) === s).length;
+  const ent = sc("entretien"), ref = sc("refus"), post = sc("postule") + ent + ref;
+  $("#stats").innerHTML = [["Postulées", post, "postule"], ["Entretiens", ent, "entretien"], ["Refus", ref, "refus"]]
+    .map(([l,v,k]) => `<button class="stat stat-hl" data-suivi="${k}" title="Afficher ces offres"><b>${v}</b><span>${l}</span></button>`).join("");
+}
+
+const todayISO = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); };
+function datesCell(j, st){
+  const S = S_OF(j);
+  const pub = String(j.date || "").trim();
+  const line = (lbl, inner, cls) => `<div class="dl${cls ? " " + cls : ""}"><span>${lbl}</span>${inner}</div>`;
+  let h = line("Publiée", pub ? `<b>${esc(pub)}</b>` : `<i>n.c.</i>`);
+  if (S.dPost || st === "postule" || st === "entretien" || st === "refus") h += line("Postulé", `<input type="date" data-dk="dPost" data-did="${j.docId}" value="${esc(S.dPost || "")}" aria-label="Date de candidature">`, "on");
+  if (S.dEnt || st === "entretien") h += line("Entretien", `<input type="date" data-dk="dEnt" data-did="${j.docId}" value="${esc(S.dEnt || "")}" aria-label="Date d'entretien">`, "on");
+  return h;
+}
+
+const NEW_MS = 3 * 24 * 3600 * 1000;
+function isNew(j){ if (!j.createdAt || stOf(j)) return false; const t = Date.parse(j.createdAt); return !isNaN(t) && Date.now() - t < NEW_MS; }
+
+function render(){
+  document.querySelectorAll("#fTier button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === fTier)));
+  const piste = $("#fPiste").value, q = $("#fQ").value.trim().toLowerCase(), local = $("#fLocal").checked && !!localRe(), hide = $("#fHide").checked;
+  const sv = $("#fSuivi").value;
+  const txt = j => (j.title + " " + j.co + " " + j.loc).toLowerCase();
+  const rows = ALL().filter(j => {
+    const st0 = stOf(j), OUT = st0 === "ecarte" || st0 === "refus";
+    if (sv && (sv === "none" ? st0 !== "" : sv === "ecarte" ? !OUT : st0 !== sv)) return false;
+    if (!sv && OUT) return false;
+    if (piste && j.p !== piste) return false;
+    if (local && !isLocal(j)) return false;
+    if (q && !txt(j).includes(q)) return false;
+    if (sv) return true;
+    const nw = isNew(j) || j.pending;
+    if (!nw && fTier === "A" && j.t !== "A") return false;
+    if (!nw && fTier === "AB" && j.t === "C") return false;
+    if (!nw && fTier === "C" && j.t !== "C") return false;
+    if (hide && st0 === "postule") return false;
+    return true;
+  });
+  const SORD = { entretien: 0, postule: 1, apostuler: 2, "": 3, ecarte: 4, refus: 5 }, TORD = { A: 0, B: 1, C: 2 };
+  const base = $("#fSort").value === "suivi" ? (a, b) => (SORD[stOf(a)] - SORD[stOf(b)]) || (TORD[a.t] - TORD[b.t]) : (a, b) => (TORD[a.t] - TORD[b.t]) || String(b.createdAt).localeCompare(String(a.createdAt));
+  rows.sort((a, b) => {
+    const na = isNew(a), nb = isNew(b);
+    if (na !== nb) return na ? -1 : 1;
+    if (na && nb) return String(b.createdAt).localeCompare(String(a.createdAt));
+    return base(a, b);
+  });
+  const nNew = rows.filter(isNew).length;
+  document.querySelectorAll("#fTier button").forEach(b => b.disabled = !!sv);
+  if (!rows.length){
+    const msg = !ALL().length
+      ? (PROF.source ? "Aucune offre pour l'instant. Dans Claude, lance <code>/radar</code> pour ta première tournée, ou ajoute une annonce à la main." : "Ton radar est vide. Commence par <code>/radar-installation</code> dans Claude.")
+      : "Aucune offre ne correspond à ces filtres.";
+    tb.innerHTML = `<tr><td colspan="9" class="empty">${msg}</td></tr>`; return;
+  }
+  tb.innerHTML = rows.map((j, i) => {
+    const st = stOf(j);
+    const sep = nNew && i === 0 ? `<tr class="grp"><td colspan="9">Nouvelles offres · ${nNew}<span> · en tête de liste quel que soit leur rang, jusqu'à ce que tu leur donnes un suivi (ou 3 jours au plus)</span></td></tr>`
+      : nNew && i === nNew ? `<tr class="grp"><td colspan="9">Toutes les offres</td></tr>` : "";
+    return sep + `<tr data-id="${j.docId}"${isNew(j) ? ' class="new"' : ""}>
+      <td><span class="tier t${j.t}">${j.t}</span></td>
+      <td style="min-width:260px">${j.s.length ? `<a class="ttl" href="${esc(j.s[0][1])}" target="_blank" rel="noopener">${esc(j.title)}</a>` : `<span class="ttl">${esc(j.title)}</span>`}${j.pending ? '<span class="tag" style="color:var(--tB)">à compléter</span>' : isNew(j) ? '<span class="tag">nouvelle</span>' : ""}
+        <div class="co">${esc(j.co)}</div>${j.note ? `<div class="note">${esc(j.note)}</div>` : ""}</td>
+      <td><span class="pill">${esc(j.p)}</span></td>
+      <td>${isLocal(j) ? `<span class="pill loc">${esc(j.loc)}</span>` : esc(j.loc)}</td>
+      <td class="num">${esc(j.sal)}</td>
+      <td><div class="src">${j.s.map(([l,u]) => `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(l)}</a>`).join("")}</div></td>
+      <td><select class="status" data-st="${j.docId}" aria-label="Suivi">
+        ${[["","—"],["apostuler","À postuler"],["postule","Postulé"],["entretien","Entretien"],["refus","Refus"],["ecarte","Écartée"]].map(([v,l]) => `<option value="${v}" ${st===v?"selected":""}>${l}</option>`).join("")}
+      </select></td>
+      <td class="dates">${datesCell(j, st)}</td>
+      <td><div class="acts">${j.pending ? `<button class="btn primary" data-edit="${j.docId}">Compléter</button>` : `<button class="btn" data-gen="lettre" data-id="${j.docId}">Lettre</button><button class="btn" data-gen="cv" data-id="${j.docId}">CV</button><button class="btn" data-edit="${j.docId}">Modifier</button>`}<button class="btn" data-del="${j.docId}" aria-label="Supprimer cette annonce">Supprimer</button></div></td>
+    </tr>`;
+  }).join("");
+}
+const byId = id => ALL().find(x => x.docId === id);
+
+tb.addEventListener("click", e => {
+  if (e.target.closest("a, button, select, input")) {
+    const b = e.target.closest("button[data-gen]");
+    if (b) openDrawer(b.dataset.id, b.dataset.gen);
+    const ed = e.target.closest("button[data-edit]");
+    if (ed){ const j = byId(ed.dataset.edit); if (j) openAdd(j); }
+    const del = e.target.closest("button[data-del]");
+    if (del){
+      if (del.dataset.armed){ const j = byId(del.dataset.del); if (j) deleteJob(j); }
+      else { del.dataset.armed = "1"; del.textContent = "Confirmer"; del.classList.add("danger"); setTimeout(() => { if (del.isConnected){ delete del.dataset.armed; del.textContent = "Supprimer"; del.classList.remove("danger"); } }, 4000); }
+    }
+    return;
+  }
+  const tr = e.target.closest("tr[data-id]");
+  if (tr){ const j = byId(tr.dataset.id); if (!j || !j.s.length) return; const a = document.createElement("a"); a.href = j.s[0][1]; a.target = "_blank"; a.rel = "noopener"; a.click(); }
+});
+tb.addEventListener("change", e => {
+  const di = e.target.closest("input[data-dk]");
+  if (di){ setSuivi(di.dataset.did, { [di.dataset.dk]: di.value }); return; }
+  const s = e.target.closest("select[data-st]"); if (!s) return;
+  const cur0 = Object.assign({}, SUIVI[s.dataset.st], { st: s.value });
+  if (s.value === "postule" && !cur0.dPost) cur0.dPost = todayISO();
+  if (s.value === "entretien" && !cur0.dEnt) cur0.dEnt = todayISO();
+  setSuivi(s.dataset.st, cur0);
+  stats(); render();
+});
+$("#fTier").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; fTier = b.dataset.v; try { localStorage.setItem(LS + "-tier", fTier); } catch (er) {} render(); });
+["#fPiste","#fLocal","#fHide","#fSuivi","#fSort"].forEach(s => $(s).addEventListener("change", render));
+try { const so = localStorage.getItem(LS + "-sort"); if (so) $("#fSort").value = so; } catch (e) {}
+$("#fSort").addEventListener("change", () => { try { localStorage.setItem(LS + "-sort", $("#fSort").value); } catch (e) {} });
+$("#fQ").addEventListener("input", render);
+$("#stats").addEventListener("click", e => {
+  const b = e.target.closest("button[data-suivi]"); if (!b) return;
+  $("#fSuivi").value = $("#fSuivi").value === b.dataset.suivi ? "" : b.dataset.suivi; render();
+});
+
+// ---------- génération ----------
+let cur = null, kind = "lettre", ctl = null, samplePromise = null, lastText = "", lastPdf = null, genBusy = false;
+const getSample = () => (samplePromise ||= (window.claude ? window.claude.use("sample").catch(() => null) : Promise.resolve(null)));
+let downloads = null;
+if (window.claude) window.claude.use("downloads").then(d => { downloads = d; }).catch(() => {});
+
+function setKind(k){
+  kind = k;
+  document.querySelectorAll("#dTabs button").forEach(b => b.classList.toggle("primary", b.dataset.k === k));
+  $("#dKind").textContent = k === "lettre" ? "Lettre de motivation" : "CV adapté";
+  $("#dGo").textContent = k === "lettre" ? "Générer la lettre" : "Générer le CV (PDF)";
+  if (cur) restoreSaved();
+}
+function openDrawer(id, k){
+  cur = byId(id); if (!cur) return;
+  $("#dTitle").textContent = cur.title;
+  $("#dCo").textContent = cur.co + " · " + cur.loc + (cur.sal !== "n.c." ? " · " + cur.sal : "");
+  $("#dAd").value = adOf(cur);
+  adHint(); setKind(k);
+  $("#scrim").hidden = false; $("#drawer").hidden = false; $("#dAd").focus();
+}
+function closeDrawer(){ $("#drawer").hidden = true; if ($("#addDrawer").hidden && $("#profDrawer").hidden) $("#scrim").hidden = true; }
+function adHint(){
+  const v = $("#dAd").value.trim(), h = $("#dAdHint");
+  if (v.length < 200){ h.textContent = "Pas de description complète pour cette offre : colle-la ici. Sinon, le texte ne s'appuiera que sur le titre."; h.className = "hint warn"; }
+  else { h.textContent = "Description chargée (" + v.length + " caractères)."; h.className = "hint"; }
+}
+let adTimer = null;
+$("#dAd").addEventListener("input", () => { adHint(); if (!cur) return; const id = cur.docId, v = $("#dAd").value; clearTimeout(adTimer); adTimer = setTimeout(() => setSuivi(id, { ad: v.slice(0, 60000) }), 800); });
+$("#dTabs").addEventListener("click", e => { const b = e.target.closest("button"); if (b) setKind(b.dataset.k); });
+$("#dClose").onclick = closeDrawer;
+
+function charLimit(s){
+  const m = String(s || "").match(/(\d[\d\s.]*)\s*(?:caract|car\.|signes|chars?)/i);
+  if (!m) return 0; const n = parseInt(m[1].replace(/[\s.]/g, ""), 10);
+  return n > 20 && n < 20000 ? n : 0;
+}
+function knowledge(){
+  return String(PROF.source || "").trim() + (String(PROF.ajouts || "").trim() ? "\n\nCOMPLÉMENTS (apportés par " + PRENOM() + " en conversation, aussi fiables que le reste) :\n" + PROF.ajouts.trim() : "");
+}
+function prompt(){
+  const ad = $("#dAd").value.trim() || "(Description non fournie. Titre seul : " + cur.title + ")";
+  const extra = $("#dExtra").value.trim();
+  const P = PRENOM();
+  const head = `Tu aides ${NOM()} à postuler. Écris en français. Règle absolue : n'utilise QUE des faits présents dans sa base de connaissance ci-dessous (fusion de son CV et de son profil LinkedIn, plus ses compléments). C'est la version la plus complète de son parcours : pars toujours d'elle, sélectionne et reformule, ne perds aucune expérience. N'invente aucun chiffre, aucune mission, aucun outil, aucun diplôme. Si l'annonce demande quelque chose que la base ne montre pas, ne le prétends pas.
+
+OFFRE
+Intitulé : ${cur.title}
+Entreprise : ${cur.co}
+Lieu : ${cur.loc} · Salaire : ${cur.sal}
+Description :
+${ad}
+
+BASE DE CONNAISSANCE DE ${NOM().toUpperCase()}
+${knowledge()}
+`;
+  const task = kind === "lettre"
+    ? `TÂCHE : rédige une lettre de motivation de 250 à 320 mots, prête à envoyer.
+- Ton : direct, sûr de soi, concret, sans flatterie ni formules creuses (pas de « c'est avec un grand intérêt », pas de « passionné »).
+- Ouverture : une phrase qui relie un enjeu précis de l'annonce à une réalisation concrète de ${P}.
+- Corps : 2 ou 3 preuves tirées de la base, chacune liée explicitement à une exigence de l'annonce, avec les chiffres de la base.
+- Si un écart important existe, traite-le en une phrase honnête qui montre comment il est compensé.
+- Fin : proposition d'échange, sobre.
+- Format : objet, formule d'appel « Madame, Monsieur, », corps, formule de politesse courte, signature « ${NOM()} ». Pas d'adresse, pas de date, pas de lieu de résidence.
+Réponds UNIQUEMENT avec un objet JSON de cette forme :
+{"lettre":"le texte complet de la lettre, prêt à envoyer, avec des \\n pour les sauts de ligne","points":["écart 1","écart 2"]}
+"lettre" ne contient QUE la lettre (aucune note, aucun commentaire). "points" : 2 ou 3 écarts entre l'offre et le profil, pour ${P} uniquement.`
+    : `TÂCHE : adapte le CV à cette offre. Le résultat sera mis en page automatiquement en PDF (deux colonnes).
+Réponds UNIQUEMENT avec un objet JSON de cette forme :
+{"titres":["ligne 1","ligne 2"],"accroche":"une ligne","competences":["**Libellé** (précision)"],"outils":["**Famille :** outil, outil"],"formation":["**Diplôme** @ École - année"],"certifications":["Certification"],"langues":["**Anglais** : niveau"],"parcours":[{"poste":"","entreprise":"","dates":"","intro":"","puces":["",""]}],"choix":["","",""]}
+Règles :
+- "titres" : 2 ou 3 lignes courtes (40 caractères max chacune) qui positionnent ${P} sur l'offre, sans mentir sur le niveau.
+- "accroche" : une ligne (110 caractères max) : années d'expérience, spécialité, atout distinctif.
+- "competences" : 5 à 7 items courts, tirés de la base, classés par pertinence et formulés avec le vocabulaire de l'annonce quand c'est exact. Le libellé est entouré de ** pour le gras.
+- "outils" : 2 à 4 lignes regroupant les outils et méthodes de la base, les plus utiles à l'offre d'abord. Vide si la base n'en cite pas.
+- "formation", "certifications", "langues" : repris fidèlement de la base (vides s'il n'y en a pas). Pas de nationalité, pas d'âge, pas de situation familiale.
+- "parcours" : TOUTES les expériences de la base, en ordre chronologique inverse, avec les dates exactes. Les 4 ou 5 plus pertinentes : "intro" d'une phrase et 2 à 4 puces orientées résultats, avec les chiffres de la base. Les autres : "intro" d'une ou deux lignes et "puces" vides. Mets en gras avec ** les mots-clés qui répondent à l'annonce, avec parcimonie.
+- Le CV peut tenir sur deux pages : développe ce qui sert l'offre, mais reste net (pas de remplissage).
+- "choix" : 3 phrases (ce qui est mis en avant, ce qui est réduit, les mots-clés de l'annonce repris).
+- N'ajoute aucune compétence, aucun chiffre ni aucune mission absents de la base.`;
+  const lim = charLimit(extra);
+  const pri = extra ? `\n\nCONSIGNES PRIORITAIRES DE ${P.toUpperCase()} (elles l'emportent sur toutes les règles ci-dessus, longueur et format compris) : ${extra}` + (lim ? `\nLIMITE STRICTE : le texte livré ("lettre" pour une lettre) fait au maximum ${lim} caractères, espaces compris. Compte-les. Si besoin, supprime formule d'appel, objet et signature.` : "") : "";
+  return head + "\n" + task + pri;
+}
+function showNote(title, items){
+  const box = $("#dNote");
+  if (!items || !items.length){ box.hidden = true; $("#dNoteBody").textContent = ""; return; }
+  $("#dNoteBody").textContent = title + " :\n" + items.map(x => "• " + x).join("\n");
+  box.hidden = false;
+}
+function cvPreview(cv){
+  const L = [], clean = s => String(s || "").replace(/\*\*/g, "");
+  L.push((cv.titres || []).join(" · "));
+  if (cv.accroche) L.push(cv.accroche);
+  const sec = (t, arr) => { if (arr && arr.length){ L.push("", t); arr.forEach(c => L.push("• " + clean(c))); } };
+  sec("COMPÉTENCES", cv.competences); sec("OUTILS & MÉTHODES", cv.outils);
+  L.push("", "PARCOURS");
+  (cv.parcours || []).forEach(j => {
+    L.push("", "● " + clean(j.poste) + " @ " + clean(j.entreprise) + (j.dates ? " (" + j.dates + ")" : ""));
+    if (j.intro) L.push(clean(j.intro));
+    (j.puces || []).forEach(p => L.push("  › " + clean(p)));
+  });
+  sec("FORMATION", cv.formation); sec("CERTIFICATIONS", cv.certifications); sec("LANGUES", cv.langues);
+  return L.join("\n");
+}
+
+// ---------- PDF ----------
+const WIN_EXTRA = "€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ";
+function pdfSafe(s){
+  return String(s ?? "")
+    .replace(/[   ]/g, " ").replace(/[●▪■]/g, "•").replace(/≥/g, ">=").replace(/≤/g, "<=").replace(/→/g, "->")
+    .replace(/[‐‑]/g, "-").replace(/[^\x00-\xff]/g, c => WIN_EXTRA.includes(c) ? c : "");
+}
+function hexRgb(h){ const m = /^#?([0-9a-f]{6})$/i.exec(String(h || "")); if (!m) return [15,107,92]; const n = parseInt(m[1], 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+function finalizePdf(doc){
+  const u8 = new Uint8Array(doc.output("arraybuffer"));
+  let s = ""; for (let i = 0; i < u8.length; i++) s += String.fromCharCode(u8[i]);
+  const re = /\/(Producer|Creator) \(([^)]*)\)/g; let m;
+  while ((m = re.exec(s))){ const start = m.index + m[0].indexOf("(") + 1; for (let i = 0; i < m[2].length; i++) u8[start + i] = 32; }
+  return new Blob([u8], { type: "application/pdf" });
+}
+function contactLine(withCity){
+  return [withCity && PROF.villeCv !== false ? PROF.ville : "", PROF.tel, PROF.email].map(x => String(x || "").trim()).filter(Boolean).join("  ·  ");
+}
+function buildPdf(jsPDFCtor, cv){
+  const doc = new jsPDFCtor({ unit: "mm", format: "a4" });
+  const ACC = hexRgb(PROF.couleur), NAVY = [40,52,64], GREY = [128,132,136], INK = [33,37,41];
+  const TOP = 14, BOTTOM = 284;
+  const L = { x: 12, w: 56 }, R = { x: 76, w: 122 };
+  const col = { L: { page: 1, y: 0 }, R: { page: 1, y: 0 } };
+  const lh = pt => pt * 0.3528 * 1.28;
+  function ensure(c, need){
+    doc.setPage(col[c].page);
+    if (col[c].y + need > BOTTOM){
+      col[c].page++;
+      if (doc.getNumberOfPages() < col[c].page) doc.addPage();
+      doc.setPage(col[c].page); col[c].y = TOP + 4;
+    }
+  }
+  function rich(c, box, text, o){
+    o = o || {}; const size = o.size || 8.6, indent = o.indent || 0, color = o.color || INK, italic = o.italic;
+    const words = [];
+    pdfSafe(text).split("**").forEach((seg, i) => seg.split(/(\s+)/).forEach(w => { if (w) words.push({ w, b: i % 2 === 1 }); }));
+    const style = b => italic ? (b ? "bolditalic" : "italic") : (b ? "bold" : "normal");
+    doc.setFontSize(size); doc.setTextColor(...color);
+    let line = [], lw = 0; const maxw = box.w - indent, lines = [];
+    for (const t of words){
+      doc.setFont("helvetica", style(t.b)); const ww = doc.getTextWidth(t.w);
+      if (/^\s+$/.test(t.w)){ if (line.length){ line.push({ ...t, ww }); lw += ww; } continue; }
+      if (lw + ww > maxw && line.length){ while (line.length && /^\s+$/.test(line[line.length-1].w)) line.pop(); lines.push(line); line = []; lw = 0; }
+      line.push({ ...t, ww }); lw += ww;
+    }
+    if (line.length) lines.push(line);
+    for (const ln of lines){
+      ensure(c, lh(size));
+      let x = box.x + indent;
+      for (const t of ln){ doc.setFont("helvetica", style(t.b)); doc.setTextColor(...color); doc.text(t.w, x, col[c].y); x += t.ww; }
+      col[c].y += lh(size);
+    }
+  }
+  function heading(c, box, t, need){
+    col[c].y += 3; ensure(c, 10 + (need || 6));
+    doc.setFont("helvetica", "normal"); doc.setFontSize(11.5); doc.setTextColor(...ACC);
+    doc.text(pdfSafe(t).toUpperCase(), box.x, col[c].y);
+    col[c].y += 1.6; doc.setDrawColor(...ACC); doc.setLineWidth(0.3); doc.line(box.x, col[c].y, box.x + box.w, col[c].y);
+    col[c].y += 4.2;
+  }
+  const textW = PHOTO ? 140 : 186;
+  doc.setFont("helvetica", "normal"); doc.setFontSize(26); doc.setTextColor(...NAVY);
+  doc.text(pdfSafe(NOM()), 12, 22);
+  let y = 31; doc.setFontSize(12); doc.setTextColor(...ACC);
+  (cv.titres || []).slice(0,3).forEach(t => { doc.text(doc.splitTextToSize(pdfSafe(String(t).replace(/\*\*/g,"")), textW)[0] || "", 12, y); y += 5.6; });
+  if (cv.accroche){ doc.setFont("helvetica", "italic"); doc.setFontSize(10); doc.setTextColor(...GREY);
+    const al = doc.splitTextToSize(pdfSafe(String(cv.accroche).replace(/\*\*/g,"")), textW); y += 2; al.forEach(l => { doc.text(l, 12, y); y += 4.6; }); }
+  y += 1.5; doc.setFont("helvetica", "normal"); doc.setFontSize(8.6); doc.setTextColor(...INK);
+  const cl = contactLine(true); if (cl){ doc.text(pdfSafe(cl), 12, y); y += 2; }
+  if (PHOTO){ try { doc.addImage(PHOTO, "JPEG", 160, 9, 38, 38); } catch (e) {} }
+  const startY = Math.max(y + 5, PHOTO ? 54 : 40);
+  col.L.y = startY; col.R.y = startY;
+
+  const leftList = (title, arr, n, need) => { if (!arr || !arr.length) return; heading("L", L, title, need); arr.slice(0, n).forEach(t => { rich("L", L, t); col.L.y += 0.8; }); };
+  leftList("Compétences clés", cv.competences, 7);
+  leftList("Outils & méthodes", cv.outils, 5);
+  leftList("Certifications", cv.certifications, 6, 10);
+  leftList("Formation", cv.formation, 6, 12);
+  leftList("Langues", cv.langues, 5);
+
+  heading("R", R, "Parcours professionnel");
+  (cv.parcours || []).forEach(j => {
+    ensure("R", 12);
+    doc.setFillColor(...ACC); doc.circle(R.x + 1.2, col.R.y - 1.1, 1.0, "F");
+    rich("R", R, "**" + String(j.poste || "").replace(/\*\*/g, "") + "** @ " + String(j.entreprise || "").replace(/\*\*/g, ""), { size: 9.8, indent: 4 });
+    if (j.dates) rich("R", R, j.dates, { size: 7.6, italic: true, color: GREY, indent: 4 });
+    col.R.y += 0.6;
+    if (j.intro) rich("R", R, j.intro, { size: 8.6, indent: 4 });
+    (j.puces || []).slice(0,4).forEach(p => {
+      ensure("R", lh(8.6));
+      doc.setFont("helvetica", "bold"); doc.setFontSize(8.6); doc.setTextColor(...ACC); doc.text("›", R.x + 5, col.R.y);
+      rich("R", R, p, { size: 8.6, indent: 8 });
+    });
+    col.R.y += 3.2;
+  });
+  const n = doc.getNumberOfPages();
+  for (let i = 1; i <= n; i++){
+    doc.setPage(i); doc.setDrawColor(220, 224, 226); doc.setLineWidth(0.2);
+    if (i === 1 || (col.L.page >= i && col.R.page >= i)) doc.line(71.5, i === 1 ? startY - 2 : TOP, 71.5, BOTTOM);
+    if (n > 1){ doc.setFont("helvetica", "normal"); doc.setFontSize(7); doc.setTextColor(...GREY); doc.text(i + " / " + n, 198, 292, { align: "right" }); }
+  }
+  doc.setProperties({ title: pdfSafe("CV - " + NOM()), author: pdfSafe(NOM()), creator: "", producer: "" });
+  return finalizePdf(doc);
+}
+function buildLetterPdf(jsPDFCtor, text, job){
+  const doc = new jsPDFCtor({ unit: "mm", format: "a4" });
+  const ACC = hexRgb(PROF.couleur), NAVY = [40,52,64], GREY = [128,132,136], INK = [33,37,41];
+  const X = 22, W = 166, BOTTOM = 280;
+  doc.setFont("helvetica", "normal"); doc.setFontSize(20); doc.setTextColor(...NAVY);
+  doc.text(pdfSafe(NOM()), X, 24);
+  doc.setFontSize(9); doc.setTextColor(...GREY);
+  doc.text(pdfSafe(contactLine(false)), X, 30);
+  doc.setDrawColor(...ACC); doc.setLineWidth(0.4); doc.line(X, 34, X + W, 34);
+  let y = 46;
+  doc.setFontSize(10); doc.setTextColor(...INK);
+  if (job && job.co){ doc.setFont("helvetica", "bold"); doc.text(pdfSafe(job.co), X + W, y, { align: "right" }); y += 5; doc.setFont("helvetica", "normal"); }
+  const d = new Date(), M = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+  doc.text(pdfSafe("Le " + d.getDate() + " " + M[d.getMonth()] + " " + d.getFullYear()), X + W, y + 3, { align: "right" });
+  y += 16;
+  const lh = 10.5 * 0.3528 * 1.45;
+  pdfSafe(text).replace(/\*\*/g, "").split(/\n/).forEach(par => {
+    const p = par.trim();
+    if (!p){ y += lh * 0.6; return; }
+    const isObj = /^objet\s*:/i.test(p);
+    doc.setFont("helvetica", isObj ? "bold" : "normal"); doc.setFontSize(10.5); doc.setTextColor(...(isObj ? NAVY : INK));
+    doc.splitTextToSize(p, W).forEach(l => { if (y + lh > BOTTOM){ doc.addPage(); y = 24; } doc.text(l, X, y); y += lh; });
+    y += lh * 0.35;
+  });
+  doc.setProperties({ title: pdfSafe("Lettre de motivation - " + NOM()), author: pdfSafe(NOM()), creator: "", producer: "" });
+  return finalizePdf(doc);
+}
+const ascii = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Za-z0-9]+/g, " ").trim();
+function posteTag(){
+  let t = String((cur && cur.title) || "");
+  t = t.replace(/\((?:[^)]*)\)/g, " ").replace(/\b[FHX](?:\s*\/\s*[FHX])+\b\/?/gi, " ").replace(/\bx\/\s*/gi, " ").replace(/^\s*(?:CDI|CDD)\b/i, " ");
+  t = t.split(/\s[–—|-]\s|\s@\s/).map(x => x.trim()).find(x => x && !/^(?:CDI|CDD)$/i.test(x)) || "";
+  const words = ascii(t).split(/\s+/).filter(Boolean); const out = [];
+  for (const w of words){ if ((out.concat(w)).join("_").length > 42) break; out.push(w); }
+  return out.length ? "_" + out.join("_") : "";
+}
+const fileName = (base, ext) => base + "_" + (ascii(NOM()).split(/\s+/).join("_") || "Candidat") + posteTag() + "." + ext;
+
+const ERR = {
+  cancelled: "Arrêté.",
+  not_granted: "L'accès à Claude a été refusé pour cette page.",
+  sampling_disabled: "Claude n'est pas disponible pour ce compte.",
+  rate_limited: "Trop de demandes. Réessaie dans un moment.",
+  session_expired: "Session expirée : reconnecte-toi à claude.ai.",
+  prompt_too_large: "Description trop longue : colle une version plus courte.",
+  refused: "La demande a été refusée. Modifie les consignes.",
+  invalid_json: "La réponse n'a pas pu être mise en forme. Relance la génération."
+};
+
+function persistGen(jobId, k, data){
+  GEN[jobId] = Object.assign({}, GEN[jobId], { [k]: data, updatedAt: new Date().toISOString() });
+  if (DB) DB.collection("generations").doc(jobId).set(GEN[jobId]).catch(() => {});
+  else { store.gen = GEN; save(); }
+}
+function setButtons(){
+  $("#dSave").textContent = kind === "cv" ? "Télécharger le CV (PDF)" : (lastPdf ? "Télécharger la lettre (PDF)" : "Télécharger (.md)");
+  $("#dSave2").textContent = "Texte brut (.md)";
+  $("#dSave").hidden = !downloads || !lastText; $("#dSave").disabled = !downloads || !lastText;
+  $("#dSave2").hidden = !(downloads && lastText);
+  $("#dCopy").disabled = !lastText;
+}
+function showResult(k, data){
+  lastPdf = null; lastText = "";
+  const J = window.jspdf && window.jspdf.jsPDF;
+  if (k === "lettre"){
+    lastText = String(data.lettre || "").trim(); $("#dOut").textContent = lastText;
+    try { lastPdf = J ? buildLetterPdf(J, lastText, cur) : null; } catch (er) { lastPdf = null; }
+    showNote("Points d'attention", data.points);
+  } else {
+    const cv = data.cv || data;
+    lastText = cvPreview(cv); $("#dOut").textContent = lastText;
+    showNote("Choix d'adaptation", cv.choix);
+    try { lastPdf = J ? buildPdf(J, cv) : null; } catch (er) { lastPdf = null; }
+  }
+  setButtons();
+}
+function restoreSaved(){
+  const saved = GEN[cur.docId] && GEN[cur.docId][kind];
+  $("#dMsg").textContent = "";
+  if (saved){
+    showResult(kind, saved);
+    const at = GEN[cur.docId].updatedAt ? new Date(GEN[cur.docId].updatedAt) : null;
+    $("#dMsg").textContent = "Dernière version générée" + (at && !isNaN(at) ? " le " + at.toLocaleDateString("fr-FR") + " à " + at.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }) : "") + ". « Générer » en crée une nouvelle.";
+  } else {
+    lastPdf = null; lastText = ""; showNote();
+    $("#dOut").textContent = "Le texte généré s'affichera ici.";
+    setButtons();
+  }
+}
+$("#dGo").onclick = async () => {
+  if (!PROF.source || PROF.source.trim().length < 200){ $("#dMsg").textContent = "Ta base de connaissance est vide : lance /radar-installation dans Claude."; return; }
+  const sample = await getSample();
+  if (!sample){ $("#dMsg").textContent = "La génération n'est pas disponible dans cette vue. Ouvre la page sur claude.ai."; return; }
+  const k = kind, job = cur, input = prompt();
+  ctl = new AbortController(); genBusy = true;
+  $("#dGo").disabled = true; $("#dStop").hidden = false; $("#dTabs").querySelectorAll("button").forEach(b => b.disabled = true);
+  $("#dMsg").textContent = ""; $("#dOut").textContent = k === "cv" ? "Adaptation du CV en cours… (compte 30 à 90 secondes)" : "Rédaction en cours… (compte 20 à 60 secondes)";
+  showNote(); $("#dSave").hidden = true; $("#dSave2").hidden = true; $("#dCopy").disabled = true;
+  try {
+    let data;
+    if (k === "lettre"){
+      const r = await sample.json(input, { signal: ctl.signal, cache: false });
+      if (!r || typeof r.lettre !== "string" || !r.lettre.trim()) throw { code: "invalid_json" };
+      data = { lettre: r.lettre.trim(), points: Array.isArray(r.points) ? r.points : [] };
+      const lim = charLimit($("#dExtra").value);
+      for (let pass = 0; lim && data.lettre.length > lim && pass < 2; pass++){
+        $("#dOut").textContent = `Texte de ${data.lettre.length} caractères : réduction à ${lim} maximum…`;
+        const short = await sample(`Réécris ce texte en ${lim} caractères MAXIMUM, espaces compris (vise ${Math.round(lim * 0.92)}). Garde les faits les plus forts, le ton direct, et n'ajoute rien. Réponds uniquement avec le texte réécrit, sans guillemets ni commentaire.\n\nTEXTE :\n${data.lettre}`, { signal: ctl.signal, cache: false });
+        const t = String(short.text || "").trim().replace(/^["«]\s*|\s*["»]$/g, "");
+        if (t) data.lettre = t;
+      }
+      if (lim) data.points = [`Longueur : ${data.lettre.length} caractères sur ${lim} autorisés.`].concat(data.points);
+    } else {
+      const cv = await sample.json(input, { signal: ctl.signal, cache: false });
+      if (!cv || !Array.isArray(cv.parcours) || !cv.parcours.length) throw { code: "invalid_json" };
+      data = { cv };
+    }
+    persistGen(job.docId, k, data);
+    if (cur === job && kind === k){
+      showResult(k, data);
+      $("#dMsg").textContent = k === "cv" ? (downloads ? "CV prêt : clique sur « Télécharger le CV (PDF) »." : "CV prêt.") : "Lettre prête. Elle reste enregistrée pour cette offre.";
+    }
+  } catch (e) {
+    if (cur === job && kind === k){ restoreSaved(); $("#dMsg").textContent = ERR[e && e.code] || "Échec de la génération. Tu peux relancer."; }
+  } finally {
+    genBusy = false;
+    $("#dGo").disabled = false; $("#dStop").hidden = true; $("#dTabs").querySelectorAll("button").forEach(b => b.disabled = false);
+  }
+};
+$("#dStop").onclick = () => ctl?.abort();
+$("#dCopy").onclick = async () => {
+  try { await navigator.clipboard.writeText(lastText); $("#dMsg").textContent = "Copié."; }
+  catch (e) { const r = document.createRange(); r.selectNodeContents($("#dOut")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); $("#dMsg").textContent = "Texte sélectionné : fais Ctrl+C."; }
+};
+async function dl(f){
+  if (!downloads) return;
+  try { await downloads.save(f); $("#dMsg").textContent = "Fichier enregistré."; }
+  catch (e) { $("#dMsg").textContent = e && e.code === "declined" ? "" : "Téléchargement indisponible ici."; }
+}
+$("#dSave").onclick = () => dl(lastPdf ? { filename: fileName(kind === "cv" ? "CV" : "Lettre", "pdf"), data: lastPdf } : { filename: fileName("Lettre", "md"), data: lastText });
+$("#dSave2").onclick = () => dl({ filename: fileName(kind === "cv" ? "CV" : "Lettre", "md"), data: lastText });
+
+// ---------- offres ----------
+const srcLabel = u => /linkedin\./.test(u) ? "LinkedIn" : /indeed\./.test(u) ? "Indeed" : /apec\./.test(u) ? "Apec" : /welcometothejungle/.test(u) ? "WTTJ" : /francetravail|pole-emploi/.test(u) ? "France Travail" : "Lien";
+function toJob(id, d){
+  const url = String(d.url || "").trim();
+  return { docId: id, t: ["A","B","C"].includes(d.t) ? d.t : "B", p: String(d.p || PISTES()[0]),
+    title: String(d.title || "Sans titre"), co: String(d.co || ""), loc: String(d.loc || "n.c."), sal: String(d.sal || "n.c."),
+    date: String(d.date || ""), note: String(d.note || ""), ad: String(d.ad || ""), pending: !!d.pending, createdAt: String(d.createdAt || ""),
+    s: /^https?:\/\//.test(url) ? [[srcLabel(url), url]] : [] };
+}
+function loadLocal(){
+  PROF = store.profil || {}; PHOTO = store.photo || ""; SUIVI = store.suivi || {}; GEN = store.gen || {};
+  CUSTOM = Object.entries(store.custom || {}).map(([id, d]) => toJob(id, d));
+  profLoaded = true; applyProfile(); stats(); render();
+}
+async function putOffer(id, d){
+  if (DB){ if (id) await DB.collection("offres").doc(id).set(d); else await DB.collection("offres").add(d); }
+  else { const k = id || "l" + Date.now().toString(36); store.custom = Object.assign({}, store.custom, { [k]: d }); save(); loadLocal(); }
+}
+async function deleteJob(j){
+  try {
+    if (DB){ await DB.collection("offres").doc(j.docId).delete(); DB.collection("suivi").doc(j.docId).delete().catch(() => {}); DB.collection("generations").doc(j.docId).delete().catch(() => {}); }
+    else { const c = Object.assign({}, store.custom); delete c[j.docId]; store.custom = c; save(); loadLocal(); }
+  } catch (e) {}
+}
+
+const addDrawer = $("#addDrawer");
+let editing = null;
+function openAdd(job){
+  editing = job || null;
+  ["aAd","aUrl","aT","aCo","aLoc","aSal","aDate","aNote"].forEach(id => $("#" + id).value = "");
+  $("#aR").value = "B"; $("#aP").value = PISTES()[0]; $("#aMsg").textContent = ""; $("#aFillMsg").textContent = "";
+  if (editing){
+    const j = editing, url = j.s.length ? j.s[0][1] : "";
+    $("#aUrl").value = url; $("#aAd").value = adOf(j);
+    if (!j.pending){ $("#aT").value = j.title; $("#aCo").value = j.co; $("#aLoc").value = j.loc === "n.c." ? "" : j.loc; $("#aSal").value = j.sal === "n.c." ? "" : j.sal; $("#aDate").value = j.date; $("#aNote").value = j.note; $("#aR").value = j.t; if (PISTES().includes(j.p)) $("#aP").value = j.p; }
+    $("#aKind").textContent = j.pending ? "Annonce à compléter" : "Modifier l'offre";
+    $("#aTitle").textContent = j.pending ? "Compléter l'annonce" : j.title;
+    $("#aSave").textContent = "Enregistrer la fiche";
+    $("#aOpenLink").href = url || "#"; $("#aOpenRow").hidden = !url;
+    $("#aQueueRow").hidden = true; $("#aOr").hidden = true;
+  } else {
+    $("#aKind").textContent = "Nouvelle offre"; $("#aTitle").textContent = "Ajouter une annonce"; $("#aSave").textContent = "Ajouter au radar";
+    $("#aOpenRow").hidden = true; $("#aQueueRow").hidden = false; $("#aOr").hidden = false;
+  }
+  $("#scrim").hidden = false; addDrawer.hidden = false; $("#aUrl").focus();
+}
+function closeAdd(){ addDrawer.hidden = true; if ($("#drawer").hidden && $("#profDrawer").hidden) $("#scrim").hidden = true; }
+$("#addOpen").onclick = () => openAdd(null); $("#aClose").onclick = closeAdd;
+
+$("#aFill").onclick = async () => {
+  const txt = $("#aAd").value.trim();
+  if (txt.length < 80){ $("#aFillMsg").textContent = "Colle d'abord le texte de l'annonce."; return; }
+  const sample = await getSample();
+  if (!sample){ $("#aFillMsg").textContent = "Claude n'est pas disponible dans cette vue : remplis les champs à la main."; return; }
+  $("#aFill").disabled = true; $("#aFillMsg").textContent = "Lecture de l'annonce…";
+  try {
+    const r = await sample.json(`Extrais les informations de cette offre d'emploi et classe-la pour ${NOM()}.
+PROFIL (résumé) : ${String(PROF.titre || "")}. ${String(PROF.source || "").slice(0, 2500)}
+CRITÈRES DE RECHERCHE : ${String(PROF.criteres || "non précisés")}
+Rang : A = bonne adéquation avec le profil et les critères (niveau au moins égal, zone et salaire compatibles) ; B = intéressant mais à vérifier ; C = hors critères (niveau inférieur, autre métier, zone ou salaire hors cible).
+Piste : choisis exactement l'une de ces valeurs : ${PISTES().join(" | ")}.
+Réponds UNIQUEMENT avec un JSON : {"title":"","co":"","loc":"ville · mode de travail","sal":"fourchette ou n.c.","date":"JJ/MM ou vide","p":"","t":"A | B | C","note":"une phrase franche : pourquoi ce rang"}
+
+ANNONCE :
+${txt.slice(0, 12000)}`, { modelTier: "quick", cache: false });
+    if (r && typeof r === "object"){
+      if (r.title) $("#aT").value = r.title; if (r.co) $("#aCo").value = r.co; if (r.loc) $("#aLoc").value = r.loc;
+      if (r.sal) $("#aSal").value = r.sal; if (r.date) $("#aDate").value = r.date; if (r.note) $("#aNote").value = r.note;
+      if (PISTES().includes(r.p)) $("#aP").value = r.p;
+      if (["A","B","C"].includes(r.t)) $("#aR").value = r.t;
+      $("#aFillMsg").textContent = "Champs remplis : vérifie-les avant d'enregistrer.";
+    }
+  } catch (e) { $("#aFillMsg").textContent = ERR[e && e.code] || "Lecture impossible : remplis les champs à la main."; }
+  finally { $("#aFill").disabled = false; }
+};
+$("#aQueue").onclick = async () => {
+  const url = $("#aUrl").value.trim();
+  if (!/^https?:\/\//.test(url)){ $("#aUrl").focus(); $("#aUrl").setCustomValidity("Colle un lien qui commence par https://"); $("#aUrl").reportValidity(); return; }
+  $("#aUrl").setCustomValidity("");
+  const d = { title: "Annonce à compléter", co: srcLabel(url), loc: "", sal: "", date: "", url, p: PISTES()[0], t: "B", note: "En attente : Claude lira l'annonce et remplira la fiche à la prochaine tournée.", ad: "", pending: true, createdAt: new Date().toISOString() };
+  $("#aQueue").disabled = true;
+  try { await putOffer(null, d); closeAdd(); }
+  catch (e) { $("#aMsg").textContent = "Enregistrement impossible. Réessaie."; }
+  finally { $("#aQueue").disabled = false; }
+};
+$("#aUrl").addEventListener("input", () => $("#aUrl").setCustomValidity(""));
+$("#aSave").onclick = async () => {
+  const d = { title: $("#aT").value.trim(), co: $("#aCo").value.trim(), loc: $("#aLoc").value.trim(), sal: $("#aSal").value.trim(),
+    date: $("#aDate").value.trim(), url: $("#aUrl").value.trim(), p: $("#aP").value, t: $("#aR").value, note: $("#aNote").value.trim(),
+    ad: $("#aAd").value.trim().slice(0, 60000), createdAt: (editing && editing.createdAt) || new Date().toISOString(), pending: false };
+  if (!d.title || !d.co){ $("#aMsg").textContent = "L'intitulé et l'entreprise sont obligatoires."; return; }
+  $("#aSave").disabled = true;
+  try {
+    await putOffer(editing ? editing.docId : null, d);
+    if (!editing && fTier !== "all" && !(fTier === "AB" && d.t !== "C") && fTier !== d.t){ fTier = "all"; render(); }
+    closeAdd();
+  } catch (e) {
+    $("#aMsg").textContent = e && e.code === "quota_exceeded" ? "Espace plein : supprime d'anciennes annonces." : "Enregistrement impossible. Réessaie.";
+  } finally { $("#aSave").disabled = false; }
+};
+
+// ---------- profil : tiroir ----------
+const profDrawer = $("#profDrawer");
+let photoDraft = null;
+function openProf(){
+  $("#pNom").value = PROF.nom || ""; $("#pTitre").value = PROF.titre || ""; $("#pEmail").value = PROF.email || ""; $("#pTel").value = PROF.tel || "";
+  $("#pVille").value = PROF.ville || ""; $("#pCouleur").value = /^#[0-9a-f]{6}$/i.test(PROF.couleur || "") ? PROF.couleur : "#0f6b5c";
+  $("#pSource").value = PROF.source || ""; $("#pAjouts").value = PROF.ajouts || ""; $("#pCriteres").value = PROF.criteres || "";
+  $("#pPistes").value = (PROF.pistes || []).join(", "); $("#pLocal").value = (PROF.local || []).join(", ");
+  photoDraft = null; showPhoto(PHOTO); $("#pMsg").textContent = ""; $("#pPhoto").value = "";
+  $("#scrim").hidden = false; profDrawer.hidden = false; $("#pNom").focus();
+}
+function showPhoto(src){ $("#pPhotoPrev").hidden = !src; $("#pPhotoDel").hidden = !src; if (src) $("#pPhotoPrev").src = src; else $("#pPhotoPrev").removeAttribute("src"); }
+function closeProf(){ profDrawer.hidden = true; if ($("#drawer").hidden && addDrawer.hidden) $("#scrim").hidden = true; }
+$("#profilOpen").onclick = openProf; $("#pClose").onclick = closeProf;
+$("#pPhoto").addEventListener("change", () => {
+  const f = $("#pPhoto").files[0]; if (!f) return;
+  const img = new Image(), url = URL.createObjectURL(f);
+  img.onload = () => {
+    const S = 320, c = document.createElement("canvas"); c.width = S; c.height = S;
+    const s = Math.min(img.width, img.height), ctx = c.getContext("2d");
+    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, S, S);
+    ctx.drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, S, S);
+    photoDraft = c.toDataURL("image/jpeg", 0.82); showPhoto(photoDraft); URL.revokeObjectURL(url);
+  };
+  img.onerror = () => { $("#pMsg").textContent = "Image illisible."; URL.revokeObjectURL(url); };
+  img.src = url;
+});
+$("#pPhotoDel").onclick = () => { photoDraft = ""; showPhoto(""); };
+$("#pSave").onclick = async () => {
+  const p = Object.assign({}, PROF, {
+    nom: $("#pNom").value.trim(), titre: $("#pTitre").value.trim(), email: $("#pEmail").value.trim(), tel: $("#pTel").value.trim(),
+    ville: $("#pVille").value.trim(), couleur: $("#pCouleur").value, source: $("#pSource").value.trim().slice(0, 120000),
+    ajouts: $("#pAjouts").value.trim().slice(0, 40000), criteres: $("#pCriteres").value.trim().slice(0, 8000),
+    pistes: splitList($("#pPistes").value).slice(0, 8), local: splitList($("#pLocal").value).slice(0, 30), updatedAt: new Date().toISOString()
+  });
+  $("#pSave").disabled = true; $("#pMsg").textContent = "Enregistrement…";
+  try {
+    if (DB){
+      await DB.collection("profil").doc("main").set(p);
+      if (photoDraft !== null) await DB.collection("profil").doc("photo").set({ data: photoDraft });
+    } else {
+      store.profil = p; if (photoDraft !== null) store.photo = photoDraft; save();
+    }
+    PROF = p; if (photoDraft !== null) PHOTO = photoDraft;
+    applyProfile(); stats(); render();
+    $("#pMsg").textContent = "Profil enregistré.";
+  } catch (e) {
+    $("#pMsg").textContent = e && e.code === "invalid_argument" ? "Texte trop long : raccourcis le parcours." : "Enregistrement impossible. Réessaie.";
+  } finally { $("#pSave").disabled = false; }
+};
+
+// ---------- fermeture des tiroirs ----------
+$("#scrim").addEventListener("click", () => { closeDrawer(); closeAdd(); closeProf(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape"){ closeDrawer(); closeAdd(); closeProf(); } });
+
+// ---------- démarrage ----------
+function start(){
+  if (!window.claude){ loadLocal(); return; }
+  window.claude.use("db").then(db => {
+    if (!db){ loadLocal(); return; }
+    DB = db;
+    let fails = 0; const fail = () => { if (++fails === 1){ DB = null; loadLocal(); } };
+    db.collection("profil").onSnapshot(snap => {
+      profLoaded = true; PROF = {}; PHOTO = "";
+      snap.docs.forEach(d => { if (d.id === "main") PROF = d.data() || {}; if (d.id === "photo") PHOTO = (d.data() || {}).data || ""; });
+      applyProfile(); stats(); render();
+    }, fail);
+    db.collection("offres").onSnapshot(snap => { CUSTOM = snap.docs.map(d => toJob(d.id, d.data() || {})); stats(); render(); }, fail);
+    db.collection("suivi").onSnapshot(snap => { const s = {}; snap.docs.forEach(d => { s[d.id] = d.data() || {}; }); SUIVI = s; stats(); render(); }, fail);
+    db.collection("generations").onSnapshot(snap => {
+      const g = {}; snap.docs.forEach(d => { g[d.id] = d.data() || {}; }); GEN = g;
+      if (cur && !$("#drawer").hidden && !genBusy) restoreSaved();
+    }, () => {});
+  }).catch(() => loadLocal());
+}
+applyProfile(); stats(); render(); start();
+</script>
