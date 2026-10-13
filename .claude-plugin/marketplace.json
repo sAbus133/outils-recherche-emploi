@@ -1,7 +1,7 @@
 {
   "name": "outils-recherche-emploi",
   "description": "Outils Claude pour cadres en recherche d'emploi : Radar candidatures (collecte et classement des offres, suivi, lettres et CV adaptés).",
-  "owner": { "name": "Radar candidatures" },
+  "owner": { "name": "Sébastien Piasco" },
   "plugins": [
     {
       "name": "radar-candidatures",

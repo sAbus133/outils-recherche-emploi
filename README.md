@@ -10,13 +10,13 @@ Marketplace de plugins Claude pour les cadres en recherche d'emploi.
 
 **Claude (Cowork, application de bureau ou claude.ai)**
 1. Barre latérale : **Personnaliser** (Customize), puis **Plugins**.
-2. **Ajouter une marketplace** (Add marketplace), colle : `<compte>/<depot>`
+2. **Ajouter une marketplace** (Add marketplace), colle : `sAbus133/outils-recherche-emploi`
 3. Installe **radar-candidatures**.
 4. Dans une nouvelle conversation, tape `/radar-installation` et laisse-toi guider.
 
 **Claude Code**
 ```
-/plugin install radar-candidatures --marketplace <compte>/<depot>
+/plugin install radar-candidatures --marketplace sAbus133/outils-recherche-emploi
 ```
 
 ## Mises à jour

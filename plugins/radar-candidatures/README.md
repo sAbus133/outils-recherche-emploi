@@ -25,10 +25,10 @@ Il te faut :
 
 Dans Claude (Cowork) :
 1. Barre latérale : **Personnaliser** (Customize), puis **Plugins**.
-2. **Ajouter une marketplace** (Add marketplace), colle : `<compte>/<depot>`
+2. **Ajouter une marketplace** (Add marketplace), colle : `sAbus133/outils-recherche-emploi`
 3. Dans la liste qui apparaît, installe **radar-candidatures**.
 
-Dans Claude Code : `/plugin install radar-candidatures --marketplace <compte>/<depot>`
+Dans Claude Code : `/plugin install radar-candidatures --marketplace sAbus133/outils-recherche-emploi`
 
 Mises à jour : sur la page Plugins, bouton **Mettre à jour** (Update) de la marketplace.
 
