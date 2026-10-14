@@ -1,5 +1,9 @@
 # Journal des versions
 
+## radar-candidatures 1.1.0 (octobre 2026)
+- Lettre modifiable directement dans la fenêtre d'affichage avant l'export PDF, enregistrée automatiquement, avec le nombre de caractères.
+- Consignes séparées pour la lettre et pour le CV, mémorisées par offre : une consigne de lettre n'influence plus le CV.
+
 ## radar-candidatures 1.0.0 (octobre 2026)
 - Installation guidée en 7 étapes (`/radar-installation`) : CV + profil LinkedIn fusionnés, contrôle de cohérence, critères, page personnelle.
 - Aide aux alertes LinkedIn, Apec, Indeed et au libellé Gmail « Radar » (`/radar-alertes`).

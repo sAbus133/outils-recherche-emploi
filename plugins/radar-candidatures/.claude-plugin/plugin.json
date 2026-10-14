@@ -1,6 +1,6 @@
 {
   "name": "radar-candidatures",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Radar candidatures : tableau de bord de recherche d'emploi pour cadres. Installation guidée, alertes emploi, tournée de collecte des offres (Gmail + Chrome), classement A/B/C, suivi des candidatures, lettres et CV adaptés à partir de ton CV et de ton profil LinkedIn.",
   "author": { "name": "Radar candidatures" },
   "keywords": ["emploi", "recherche d'emploi", "candidatures", "cv", "lettre de motivation", "linkedin", "apec", "indeed"]
