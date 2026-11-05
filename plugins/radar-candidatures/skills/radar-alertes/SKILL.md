@@ -12,7 +12,7 @@ Méthode détaillée et syntaxe par site : `references/methode-alertes.md`. Lis-
 ## Étape A · Charger le contexte
 
 1. Trouver la page radar du membre : `Artifact` action `list`, artifact intitulé « Radar candidatures ». S'il y en a plusieurs, demander lequel. S'il n'y en a pas, proposer `/radar-installation` et s'arrêter.
-2. `ArtifactData` `get` sur `profil/main` : lire `criteres`, `pistes`, `local`, `ville`, et le titre. Lire aussi `meta/recherches` s'il existe (révision d'alertes existantes).
+2. `ArtifactData` `get` sur `profil/main` : lire `criteres`, `pistes`, `local`, `ville`, le titre, et s'ils existent `positionnements`, `metiersCoeur`, `freelance`. Lire aussi `meta/recherches` s'il existe (révision d'alertes existantes).
 
 ## Étape B · Concevoir les recherches
 
@@ -25,6 +25,8 @@ Puis décliner par site selon `references/methode-alertes.md` :
   - 3 ou 4 alertes sur les intitulés les plus porteurs (une expression chacune) ;
   - 1 alerte « **filet large** » : aucun mot-clé, filtre **Fonction** correspondant au métier du membre + zone + rayon + salaire minimum. Elle rattrape les intitulés imprévus.
 - Filtres communs : salaire plancher quand le site le permet, contrat (CDI ou autre selon critères), tri par date, rayon cohérent avec la zone.
+- **Recherches directes de la tournée** : 4 à 9 expressions exactes (celles des positionnements et des métiers de cœur d'abord), que `/radar` relancera à chaque passage sur l'Apec et Indeed. Elles ne comptent pas dans la limite des 5 alertes Apec.
+- **Freelance** (si `freelance.actif`) : Free-Work ne couvre que la tech et l'IT. Propose-le seulement si le métier du membre en relève, avec 3 à 6 expressions ; sinon, n'en parle pas.
 
 Présente au membre un **tableau** : site · nom de l'alerte · requête exacte · zone/rayon · filtres. Explique en une ligne le rôle du filet large. Fais valider ou corriger.
 
@@ -57,10 +59,14 @@ Si le membre te demande de les créer toi-même **et** que Claude in Chrome est 
 `ArtifactData` `set` sur `meta/recherches` :
 ```json
 {"liste": [{"site": "LinkedIn", "libelle": "Direction financière", "url": "<URL de recherche propre, triée par date>", "alerte": true}],
+ "directes": {"expressions": ["directeur financier", "DAF"], "apecLieu": "<code lieux de l'URL Apec>", "indeedLieu": "<lieu encodé>", "rayonKm": 100,
+              "freeWork": false, "expressionsFreelance": []},
  "requeteGmail": "<requête du filtre>",
  "updatedAt": "<ISO 8601 UTC avec Z>"}
 ```
 Les URL sont celles des **pages de résultats**, sans paramètres de suivi. Pour LinkedIn, le format `https://www.linkedin.com/jobs/search-results/?keywords=…` (jamais `jobs/search/?keywords=`).
+
+`apecLieu` se lit dans l'URL d'une recherche Apec faite sur le site (paramètre `lieux`) : ne l'invente jamais. S'il est inconnu, demande au membre de lancer une recherche Apec sur sa ville et de te donner l'adresse de la page, ou lis-la via Claude in Chrome s'il le souhaite.
 
 ## Étape F · Conclure
 

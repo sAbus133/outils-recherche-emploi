@@ -119,6 +119,7 @@ code{font:500 12.5px var(--f-mono);background:var(--accent-soft);padding:1px 5px
 #profDrawer textarea{font-size:12.5px}
 #profDrawer input[type=color]{width:100%;height:36px;padding:2px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
 #profDrawer input[type=file]{font-size:12.5px;max-width:100%}
+#profDrawer .form input[type=checkbox]{width:auto}
 </style>
 <div class="wrap">
   <header>
@@ -170,7 +171,7 @@ code{font:500 12.5px var(--f-mono);background:var(--accent-soft);padding:1px 5px
       <tbody id="tb"></tbody>
     </table>
   </div>
-  <p class="foot">Les nouvelles offres s'affichent en tête pendant 3 jours ou jusqu'à ce que tu leur donnes un suivi. Les offres écartées ou refusées disparaissent de la liste (menu Suivi pour les revoir). Les lettres et CV sont générés à partir de ta base de connaissance (bouton « Mon profil »).</p>
+  <p class="foot">Les nouvelles offres s'affichent en tête pendant 3 jours ou jusqu'à ce que tu leur donnes un suivi. Les offres écartées ou refusées disparaissent de la liste (menu Suivi pour les revoir). Les lettres, CV et dossiers de mission sont générés à partir de ta base de connaissance (bouton « Mon profil »).</p>
 </div>
 
 <div class="scrim" id="scrim" hidden></div>
@@ -188,6 +189,7 @@ code{font:500 12.5px var(--f-mono);background:var(--accent-soft);padding:1px 5px
     <div class="tabs" id="dTabs">
       <button class="btn" data-k="lettre">Lettre de motivation</button>
       <button class="btn" data-k="cv">CV adapté</button>
+      <button class="btn" data-k="dossier" id="dTabDossier" hidden>Dossier de mission</button>
     </div>
     <div>
       <label class="lbl" for="dAd">Texte de l'annonce</label>
@@ -278,13 +280,26 @@ code{font:500 12.5px var(--f-mono);background:var(--accent-soft);padding:1px 5px
       <div class="full"><label class="lbl" for="pPistes">Pistes métier (séparées par des virgules)</label><input id="pPistes"></div>
       <div class="full"><label class="lbl" for="pLocal">Villes « proches de chez moi » (séparées par des virgules)</label><input id="pLocal"></div>
     </div>
+    <div>
+      <label class="lbl" for="pPos">Positionnements (2 conseillés, 3 au plus, un par ligne)</label>
+      <textarea id="pPos" style="min-height:90px" placeholder="Nom du positionnement : ce qu'il couvre et les preuves de ton parcours qui le soutiennent"></textarea>
+      <div class="hint">Un recruteur décide en 12 secondes. Chaque lettre et chaque CV ne portera qu'un seul de ces angles, et une offre hors positionnement perd un rang. Laisse vide pour ne pas utiliser ce garde-fou.</div>
+    </div>
+    <div class="form">
+      <div class="full"><label class="lbl" for="pHors">Hors positionnement (même si le poste semble intéressant)</label><input id="pHors" placeholder="Intitulés ou familles de postes qui brouillent ton message"></div>
+      <div class="full"><label class="lbl" for="pCoeur">Métiers de cœur, jamais écartés mécaniquement</label><input id="pCoeur" placeholder="Intitulés où ta légitimité est la plus forte"></div>
+      <div class="full"><label class="chk"><input type="checkbox" id="pFree"> Je cherche aussi des missions en freelance</label></div>
+      <div class="full"><label class="lbl" for="pFreeStruct">Structure de facturation (facultatif)</label><input id="pFreeStruct" placeholder="Ex. : ma société, portage salarial…"></div>
+      <div><label class="lbl" for="pTjmA">TJM minimum pour un rang A (€/jour)</label><input id="pTjmA" type="number" min="0" step="10"></div>
+      <div><label class="lbl" for="pTjmB">TJM minimum pour un rang B (€/jour)</label><input id="pTjmB" type="number" min="0" step="10"></div>
+    </div>
     <div class="row"><button class="btn primary" id="pSave">Enregistrer le profil</button><span class="hint" id="pMsg"></span></div>
   </div>
 </aside>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 // Radar candidatures : modèle générique (aucune donnée personnelle dans le code).
-// Données : db "profil/main", "profil/photo", "offres/*", "suivi/*", "generations/*", "meta/collecte".
+// Données : db "profil/main", "profil/photo", "offres/*", "suivi/*", "generations/*", "meta/collecte", "meta/recherches".
 // Repli : localStorage si la base n'est pas disponible.
 
 // ---------- état ----------
@@ -294,7 +309,7 @@ try { store = JSON.parse(localStorage.getItem(LS) || "{}") || {}; } catch (e) { 
 const save = () => { try { localStorage.setItem(LS, JSON.stringify(store)); } catch (e) {} };
 
 let PROF = {}, PHOTO = "", SUIVI = {}, CUSTOM = [], GEN = {};
-let DB = null, profLoaded = false;
+let DB = null, profLoaded = false, LAST_RUN = "";
 const ALL = () => CUSTOM;
 const S_OF = j => SUIVI[j.docId] || {};
 const stOf = j => S_OF(j).st || "";
@@ -315,6 +330,11 @@ const localRe = () => {
 const isLocal = j => { const r = localRe(); return !!(r && r.test(j.loc || "")); };
 const PRENOM = () => String(PROF.nom || "").trim().split(/\s+/)[0] || "le candidat";
 const NOM = () => String(PROF.nom || "").trim() || "Candidat";
+// Champs ajoutés en 1.2.0 : absents d'un profil ancien, la page garde alors le comportement précédent.
+const POSITIONS = () => (Array.isArray(PROF.positionnements) ? PROF.positionnements : []).map(x => ({ nom: String((x && x.nom) || "").trim(), detail: String((x && x.detail) || "").trim() })).filter(x => x.nom);
+const FREE = () => !!(PROF.freelance && PROF.freelance.actif);
+const posToText = () => POSITIONS().map(x => x.nom + (x.detail ? " : " + x.detail : "")).join("\n");
+const textToPos = t => String(t || "").split("\n").map(l => l.trim()).filter(Boolean).slice(0, 3).map(l => { const i = l.indexOf(":"); return i > 0 ? { nom: l.slice(0, i).trim(), detail: l.slice(i + 1).trim() } : { nom: l, detail: "" }; });
 
 // ---------- écriture suivi ----------
 function setSuivi(docId, patch){
@@ -326,17 +346,32 @@ function setSuivi(docId, patch){
 // ---------- profil : affichage ----------
 function applyProfile(){
   $("#setupBanner").hidden = !profLoaded || !!(PROF.source && PROF.source.trim().length > 200);
-  if (PROF.nom) $("#subline").textContent = "Radar de " + PROF.nom + (PROF.titre ? " · " + PROF.titre : "") + " : offres classées, suivi des candidatures, lettres et CV adaptés.";
   const keep = $("#fPiste").value;
   $("#fPiste").innerHTML = `<option value="">Toutes les pistes</option>` + PISTES().map(p => `<option>${esc(p)}</option>`).join("");
   if (PISTES().includes(keep)) $("#fPiste").value = keep;
   $("#aP").innerHTML = PISTES().map(p => `<option>${esc(p)}</option>`).join("");
   $("#fLocal").parentElement.hidden = !localRe();
   if (PROF.couleur) document.documentElement.style.setProperty("--cv", PROF.couleur);
+  $("#dTabDossier").hidden = !FREE();
+  if (!FREE() && kind === "dossier" && cur) setKind("cv");
 }
 
 // ---------- stats ----------
+function updSub(){
+  const qui = PROF.nom ? "Radar de " + PROF.nom + (PROF.titre ? " · " + PROF.titre : "") : "";
+  const maintenant = Date.now() + 6e4, nNew = ALL().filter(isNew).length;
+  let ref = Date.parse(LAST_RUN);
+  if (isNaN(ref) || ref > maintenant){
+    const dates = ALL().map(j => Date.parse(j.createdAt)).filter(t => !isNaN(t) && t <= maintenant);
+    ref = dates.length ? Math.max(...dates) : NaN;
+  }
+  if (isNaN(ref)){ if (qui) $("#subline").textContent = qui + " : offres classées, suivi des candidatures, lettres et CV adaptés."; return; }
+  const d = new Date(ref);
+  const quand = "dernière mise à jour le " + d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" }) + " à " + d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  $("#subline").textContent = (qui ? qui + " · " : "") + quand + " · " + (nNew ? nNew + (nNew > 1 ? " nouvelles offres" : " nouvelle offre") : "aucune nouvelle offre");
+}
 function stats(){
+  updSub();
   const sc = s => ALL().filter(j => stOf(j) === s).length;
   const ent = sc("entretien"), ref = sc("refus"), post = sc("postule") + ent + ref;
   $("#stats").innerHTML = [["Postulées", post, "postule"], ["Entretiens", ent, "entretien"], ["Refus", ref, "refus"]]
@@ -409,7 +444,7 @@ function render(){
         ${[["","—"],["apostuler","À postuler"],["postule","Postulé"],["entretien","Entretien"],["refus","Refus"],["ecarte","Écartée"]].map(([v,l]) => `<option value="${v}" ${st===v?"selected":""}>${l}</option>`).join("")}
       </select></td>
       <td class="dates">${datesCell(j, st)}</td>
-      <td><div class="acts">${j.pending ? `<button class="btn primary" data-edit="${j.docId}">Compléter</button>` : `<button class="btn" data-gen="lettre" data-id="${j.docId}">Lettre</button><button class="btn" data-gen="cv" data-id="${j.docId}">CV</button><button class="btn" data-edit="${j.docId}">Modifier</button>`}<button class="btn" data-del="${j.docId}" aria-label="Supprimer cette annonce">Supprimer</button></div></td>
+      <td><div class="acts">${j.pending ? `<button class="btn primary" data-edit="${j.docId}">Compléter</button>` : `<button class="btn" data-gen="lettre" data-id="${j.docId}">Lettre</button><button class="btn" data-gen="cv" data-id="${j.docId}">CV</button>${FREE() ? `<button class="btn" data-gen="dossier" data-id="${j.docId}" title="Dossier de compétences pour une mission en freelance">Dossier</button>` : ""}<button class="btn" data-edit="${j.docId}">Modifier</button>`}<button class="btn" data-del="${j.docId}" aria-label="Supprimer cette annonce">Supprimer</button></div></td>
     </tr>`;
   }).join("");
 }
@@ -460,10 +495,10 @@ if (window.claude) window.claude.use("downloads").then(d => { downloads = d; }).
 function setKind(k){
   kind = k;
   document.querySelectorAll("#dTabs button").forEach(b => b.classList.toggle("primary", b.dataset.k === k));
-  $("#dKind").textContent = k === "lettre" ? "Lettre de motivation" : "CV adapté";
-  $("#dGo").textContent = k === "lettre" ? "Générer la lettre" : "Générer le CV (PDF)";
-  $("#dExtraLbl").textContent = k === "lettre" ? "Consignes pour la lettre (facultatif, prioritaires)" : "Consignes pour le CV (facultatif, prioritaires)";
-  $("#dExtra").placeholder = k === "lettre" ? "Ex. : 1 500 caractères max, insister sur tel projet, ton plus direct…" : "Ex. : mettre en avant tel domaine, réduire les missions anciennes, version en anglais…";
+  $("#dKind").textContent = k === "lettre" ? "Lettre de motivation" : k === "dossier" ? "Dossier de mission (freelance)" : "CV adapté";
+  $("#dGo").textContent = k === "lettre" ? "Générer la lettre" : k === "dossier" ? "Générer le dossier (PDF)" : "Générer le CV (PDF)";
+  $("#dExtraLbl").textContent = k === "lettre" ? "Consignes pour la lettre (facultatif, prioritaires)" : k === "dossier" ? "Consignes pour le dossier (facultatif, prioritaires)" : "Consignes pour le CV (facultatif, prioritaires)";
+  $("#dExtra").placeholder = k === "lettre" ? "Ex. : 1 500 caractères max, insister sur tel projet, ton plus direct…" : k === "dossier" ? "Ex. : disponible le 1er décembre, TJM à indiquer, version en anglais…" : "Ex. : mettre en avant tel domaine, réduire les missions anciennes, version en anglais…";
   $("#dExtra").value = cur ? (S_OF(cur)["extra_" + k] || "") : "";
   if (cur) restoreSaved();
 }
@@ -505,8 +540,15 @@ function prompt(){
   const ad = $("#dAd").value.trim() || "(Description non fournie. Titre seul : " + cur.title + ")";
   const extra = $("#dExtra").value.trim();
   const P = PRENOM();
+  const POS = POSITIONS(), hasPos = POS.length > 0;
+  const posCur = cur.pos && cur.pos !== "Hors positionnement" ? cur.pos : "";
+  const garde = !hasPos ? "" : `
+GARDE-FOU DE POSITIONNEMENT (prioritaire sur le reste, sauf consignes de ${P}) : un recruteur décide en 12 secondes. Il doit comprendre ce que ${P} vend et pourquoi l'appeler. Montrer qu'on sait tout faire rend impossible à positionner. ${P} a ${POS.length > 1 ? POS.length + " positionnements" : "un positionnement"}, et un document n'en porte qu'UN seul :
+${POS.map((x, i) => (i + 1) + ". « " + x.nom + " »" + (x.detail ? " : " + x.detail : "")).join("\n")}
+${POS.length > 1 ? "Choisis celui qui répond le mieux à l'offre" + (posCur ? " (le radar indique : " + posCur + ")" : "") + "." : "Sers ce positionnement."} Si l'offre en est éloignée, prends le plus proche sans élargir le discours. Tout le document sert ce seul angle : une promesse, des preuves qui la soutiennent, et rien qui la dilue (pas d'inventaire de compétences, pas de « polyvalent », pas de liste de rôles). Un atout transverse apparaît comme un différenciateur au service de l'angle choisi, jamais comme un second métier.
+`;
   const head = `Tu aides ${NOM()} à postuler. Écris en français. Règle absolue : n'utilise QUE des faits présents dans sa base de connaissance ci-dessous (fusion de son CV et de son profil LinkedIn, plus ses compléments). C'est la version la plus complète de son parcours : pars toujours d'elle, sélectionne et reformule, ne perds aucune expérience. N'invente aucun chiffre, aucune mission, aucun outil, aucun diplôme. Si l'annonce demande quelque chose que la base ne montre pas, ne le prétends pas.
-
+${garde}
 OFFRE
 Intitulé : ${cur.title}
 Entreprise : ${cur.co}
@@ -520,27 +562,37 @@ ${knowledge()}
   const task = kind === "lettre"
     ? `TÂCHE : rédige une lettre de motivation de 250 à 320 mots, prête à envoyer.
 - Ton : direct, sûr de soi, concret, sans flatterie ni formules creuses (pas de « c'est avec un grand intérêt », pas de « passionné »).
-- Ouverture : une phrase qui relie un enjeu précis de l'annonce à une réalisation concrète de ${P}.
+- Ouverture : une phrase qui relie un enjeu précis de l'annonce à une réalisation concrète de ${P}${hasPos ? ", et qui pose clairement le positionnement retenu (un seul)" : ""}.${hasPos ? `
+- Ne liste pas tout ce que ${P} sait faire : chaque paragraphe sert le même angle.` : ""}
 - Corps : 2 ou 3 preuves tirées de la base, chacune liée explicitement à une exigence de l'annonce, avec les chiffres de la base.
-- Si un écart important existe, traite-le en une phrase honnête qui montre comment il est compensé.
-- Fin : proposition d'échange, sobre.
+- Écarts avec l'offre : n'annonce JAMAIS un manque, nulle part dans la lettre. Formules interdites : « je n'ai pas… », « je n'ai pas encore… », « même si je n'ai pas… », « sans avoir… », « mon expérience de … est limitée », « … mais » qui introduit une concession. Ne nomme pas l'écart. À la place, dans le corps de la lettre, donne une preuve tirée de la base où ${P} a réussi face à un défi nouveau (nouveau secteur, nouveau cadre, nouvelle échelle, montée en compétence rapide) et relie-la à l'enjeu de l'annonce : le lecteur conclut seul que ce nouveau défi sera relevé. Ne prétends jamais avoir une expérience absente de la base. Les écarts restent listés dans "points", pour ${P} uniquement.
+- Fin : proposition d'échange, sobre, sur une note affirmative ; aucune réserve, aucune concession, aucun rappel d'écart dans le dernier paragraphe.
 - Format : objet, formule d'appel « Madame, Monsieur, », corps, formule de politesse courte, signature « ${NOM()} ». Pas d'adresse, pas de date, pas de lieu de résidence.
 Réponds UNIQUEMENT avec un objet JSON de cette forme :
 {"lettre":"le texte complet de la lettre, prêt à envoyer, avec des \\n pour les sauts de ligne","points":["écart 1","écart 2"]}
-"lettre" ne contient QUE la lettre (aucune note, aucun commentaire). "points" : 2 ou 3 écarts entre l'offre et le profil, pour ${P} uniquement.`
+"lettre" ne contient QUE la lettre (aucune note, aucun commentaire). "points" : ${hasPos ? "d'abord le positionnement retenu (et « hors positionnement » si c'est le cas), puis " : ""}2 ou 3 écarts entre l'offre et le profil, pour ${P} uniquement.`
     : `TÂCHE : adapte le CV à cette offre. Le résultat sera mis en page automatiquement en PDF (deux colonnes).
 Réponds UNIQUEMENT avec un objet JSON de cette forme :
 {"titres":["ligne 1","ligne 2"],"accroche":"une ligne","competences":["**Libellé** (précision)"],"outils":["**Famille :** outil, outil"],"formation":["**Diplôme** @ École - année"],"certifications":["Certification"],"langues":["**Anglais** : niveau"],"parcours":[{"poste":"","entreprise":"","dates":"","intro":"","puces":["",""]}],"choix":["","",""]}
 Règles :
-- "titres" : 2 ou 3 lignes courtes (40 caractères max chacune) qui positionnent ${P} sur l'offre, sans mentir sur le niveau.
-- "accroche" : une ligne (110 caractères max) : années d'expérience, spécialité, atout distinctif.
-- "competences" : 5 à 7 items courts, tirés de la base, classés par pertinence et formulés avec le vocabulaire de l'annonce quand c'est exact. Le libellé est entouré de ** pour le gras.
+- "titres" : ${hasPos ? "3 lignes courtes (40 caractères max chacune). La ligne 1 nomme le positionnement retenu dans les mots de l'offre ; les lignes 2 et 3 le précisent (périmètre, différenciateur, certification). Jamais trois métiers différents. Ne mens pas sur le niveau." : `2 ou 3 lignes courtes (40 caractères max chacune) qui positionnent ${P} sur l'offre, sans mentir sur le niveau.`}
+- "accroche" : ${hasPos ? "une ligne (110 caractères max) qui répond à « pourquoi cette personne ? » : une promesse et une preuve." : "une ligne (110 caractères max) : années d'expérience, spécialité, atout distinctif."}
+- "competences" : 5 à 7 items courts, ${hasPos ? "tous au service du positionnement retenu (retire ceux qui relèvent d'un autre), " : ""}tirés de la base, classés par pertinence et formulés avec le vocabulaire de l'annonce quand c'est exact. Le libellé est entouré de ** pour le gras.
 - "outils" : 2 à 4 lignes regroupant les outils et méthodes de la base, les plus utiles à l'offre d'abord. Vide si la base n'en cite pas.
 - "formation", "certifications", "langues" : repris fidèlement de la base (vides s'il n'y en a pas). Pas de nationalité, pas d'âge, pas de situation familiale.
-- "parcours" : TOUTES les expériences de la base, en ordre chronologique inverse, avec les dates exactes. Les 4 ou 5 plus pertinentes : "intro" d'une phrase et 2 à 4 puces orientées résultats, avec les chiffres de la base. Les autres : "intro" d'une ou deux lignes et "puces" vides. Mets en gras avec ** les mots-clés qui répondent à l'annonce, avec parcimonie.
+- "parcours" : TOUTES les expériences de la base, en ordre chronologique inverse, avec les dates exactes. Les 4 ou 5 plus pertinentes : "intro" d'une phrase et 2 à 4 puces orientées résultats, avec les chiffres de la base. Les autres : "intro" d'une ou deux lignes${hasPos ? ", formulée sous l'angle retenu ou neutre, sans mettre en avant des compétences hors positionnement," : ""} et "puces" vides. Mets en gras avec ** les mots-clés qui répondent à l'annonce, avec parcimonie.
 - Le CV peut tenir sur deux pages : développe ce qui sert l'offre, mais reste net (pas de remplissage).
-- "choix" : 3 phrases (ce qui est mis en avant, ce qui est réduit, les mots-clés de l'annonce repris).
-- N'ajoute aucune compétence, aucun chiffre ni aucune mission absents de la base.`;
+- "choix" : ${hasPos ? "3 phrases : 1) le positionnement retenu et la promesse lue en 12 secondes ; 2) ce qui a été réduit ou retiré pour rester lisible ; 3) les mots-clés de l'annonce repris. Si l'offre est hors positionnement, dis-le dans la phrase 1." : "3 phrases (ce qui est mis en avant, ce qui est réduit, les mots-clés de l'annonce repris)."}
+- N'ajoute aucune compétence, aucun chiffre ni aucune mission absents de la base.` + (kind === "dossier" ? `
+
+VARIANTE DOSSIER DE MISSION (FREELANCE) : ces règles priment sur les règles CV ci-dessus quand elles diffèrent.
+- Le document est un dossier de compétences remis à un intermédiaire ou à un client pour une mission en freelance. ${P} intervient en indépendant${PROF.freelance && PROF.freelance.structure ? " (" + PROF.freelance.structure + ")" : ""}. Le lecteur cherche à savoir vite : quel rôle est tenu, sur quelles missions comparables, avec quels résultats.${hasPos ? `
+- Positionnement : celui qui répond le mieux à la mission, un seul.` : ""}
+- "titres" : ligne 1 = le rôle de la mission dans les mots de l'annonce ; ligne 2 = le statut d'indépendant et les années d'expérience si la base les donne ; ligne 3 = certifications utiles ou différenciateur. N'invente ni disponibilité ni TJM : ils ne figurent dans le document que si les consignes de ${P} les donnent.
+- "accroche" : la promesse pour cette mission et une preuve tirée d'une mission comparable.
+- "competences" : 5 à 7 items concrets attendus par la mission (cadres, pratiques, outils, postures), tous tirés de la base.
+- "parcours" : toutes les expériences en ordre chronologique inverse, mais formulées comme des missions. Pour les 4 ou 5 plus proches de la mission demandée : "intro" = contexte client et périmètre en une phrase (taille d'équipe, secteur, cadre de travail), puis 2 à 4 puces de réalisations et résultats concrets. Les autres expériences tiennent sur une ligne, sans puces.
+- "choix" : phrase 1 = rôle${hasPos ? " et positionnement retenus" : " retenu"} ; phrase 2 = ce qui a été réduit ; phrase 3 = fourchette de TJM affichée par l'annonce si elle existe (sinon : « TJM non affiché »), et les mots-clés repris.` : "");
   const lim = charLimit(extra);
   const pri = extra ? `\n\nCONSIGNES PRIORITAIRES DE ${P.toUpperCase()} (elles l'emportent sur toutes les règles ci-dessus, longueur et format compris) : ${extra}` + (lim ? `\nLIMITE STRICTE : le texte livré ("lettre" pour une lettre) fait au maximum ${lim} caractères, espaces compris. Compte-les. Si besoin, supprime formule d'appel, objet et signature.` : "") : "";
   return head + "\n" + task + pri;
@@ -669,7 +721,7 @@ function buildPdf(jsPDFCtor, cv){
     if (i === 1 || (col.L.page >= i && col.R.page >= i)) doc.line(71.5, i === 1 ? startY - 2 : TOP, 71.5, BOTTOM);
     if (n > 1){ doc.setFont("helvetica", "normal"); doc.setFontSize(7); doc.setTextColor(...GREY); doc.text(i + " / " + n, 198, 292, { align: "right" }); }
   }
-  doc.setProperties({ title: pdfSafe("CV - " + NOM()), author: pdfSafe(NOM()), creator: "", producer: "" });
+  doc.setProperties({ title: pdfSafe((kind === "dossier" ? "Dossier de mission - " : "CV - ") + NOM()), author: pdfSafe(NOM()), creator: "", producer: "" });
   return finalizePdf(doc);
 }
 function buildLetterPdf(jsPDFCtor, text, job){
@@ -728,7 +780,7 @@ function persistGen(jobId, k, data){
 }
 function setButtons(){
   const letterPdfOk = !!(lastPdf || (window.jspdf && window.jspdf.jsPDF && lastText));
-  $("#dSave").textContent = kind === "cv" ? "Télécharger le CV (PDF)" : (letterPdfOk ? "Télécharger la lettre (PDF)" : "Télécharger (.md)");
+  $("#dSave").textContent = kind === "dossier" ? "Télécharger le dossier (PDF)" : kind === "cv" ? "Télécharger le CV (PDF)" : (letterPdfOk ? "Télécharger la lettre (PDF)" : "Télécharger (.md)");
   $("#dSave2").textContent = "Texte brut (.md)";
   $("#dSave").hidden = !downloads || !lastText; $("#dSave").disabled = !downloads || !lastText;
   $("#dSave2").hidden = !(downloads && lastText);
@@ -799,7 +851,7 @@ $("#dGo").onclick = async () => {
   const k = kind, job = cur, input = prompt();
   ctl = new AbortController(); genBusy = true;
   $("#dGo").disabled = true; $("#dStop").hidden = false; $("#dTabs").querySelectorAll("button").forEach(b => b.disabled = true);
-  setEditable(false); $("#dMsg").textContent = ""; $("#dOut").textContent = k === "cv" ? "Adaptation du CV en cours… (compte 30 à 90 secondes)" : "Rédaction en cours… (compte 20 à 60 secondes)";
+  setEditable(false); $("#dMsg").textContent = ""; $("#dOut").textContent = k === "dossier" ? "Préparation du dossier de mission en cours… (compte 30 à 90 secondes)" : k === "cv" ? "Adaptation du CV en cours… (compte 30 à 90 secondes)" : "Rédaction en cours… (compte 20 à 60 secondes)";
   showNote(); $("#dSave").hidden = true; $("#dSave2").hidden = true; $("#dCopy").disabled = true;
   try {
     let data;
@@ -810,7 +862,7 @@ $("#dGo").onclick = async () => {
       const lim = charLimit($("#dExtra").value);
       for (let pass = 0; lim && data.lettre.length > lim && pass < 2; pass++){
         $("#dOut").textContent = `Texte de ${data.lettre.length} caractères : réduction à ${lim} maximum…`;
-        const short = await sample(`Réécris ce texte en ${lim} caractères MAXIMUM, espaces compris (vise ${Math.round(lim * 0.92)}). Garde les faits les plus forts, le ton direct, et n'ajoute rien. Réponds uniquement avec le texte réécrit, sans guillemets ni commentaire.\n\nTEXTE :\n${data.lettre}`, { signal: ctl.signal, cache: false });
+        const short = await sample(`Réécris ce texte en ${lim} caractères MAXIMUM, espaces compris (vise ${Math.round(lim * 0.92)}). Garde les faits les plus forts, le ton direct, et n'ajoute rien. Réponds uniquement avec le texte réécrit, sans guillemets ni commentaire.\n\nTEXTE :\n${data.lettre}`, { signal: ctl.signal, cache: false, modelTier: "default" });
         const t = String(short.text || "").trim().replace(/^["«]\s*|\s*["»]$/g, "");
         if (t) data.lettre = t;
       }
@@ -823,7 +875,7 @@ $("#dGo").onclick = async () => {
     persistGen(job.docId, k, data);
     if (cur === job && kind === k){
       showResult(k, data);
-      $("#dMsg").textContent = k === "cv" ? (downloads ? "CV prêt : clique sur « Télécharger le CV (PDF) »." : "CV prêt.") : "Lettre prête. Elle reste enregistrée pour cette offre.";
+      $("#dMsg").textContent = k === "dossier" ? (downloads ? "Dossier prêt : clique sur « Télécharger le dossier (PDF) »." : "Dossier prêt.") : k === "cv" ? (downloads ? "CV prêt : clique sur « Télécharger le CV (PDF) »." : "CV prêt.") : "Lettre prête. Elle reste enregistrée pour cette offre.";
     }
   } catch (e) {
     if (cur === job && kind === k){ restoreSaved(); $("#dMsg").textContent = ERR[e && e.code] || "Échec de la génération. Tu peux relancer."; }
@@ -842,14 +894,15 @@ async function dl(f){
   try { await downloads.save(f); $("#dMsg").textContent = "Fichier enregistré."; }
   catch (e) { $("#dMsg").textContent = e && e.code === "declined" ? "" : "Téléchargement indisponible ici."; }
 }
-$("#dSave").onclick = () => (letterPdfNow(), dl(lastPdf ? { filename: fileName(kind === "cv" ? "CV" : "Lettre", "pdf"), data: lastPdf } : { filename: fileName("Lettre", "md"), data: lastText }));
-$("#dSave2").onclick = () => dl({ filename: fileName(kind === "cv" ? "CV" : "Lettre", "md"), data: lastText });
+const baseName = () => kind === "dossier" ? "Dossier-mission" : kind === "cv" ? "CV" : "Lettre";
+$("#dSave").onclick = () => (letterPdfNow(), dl(lastPdf ? { filename: fileName(baseName(), "pdf"), data: lastPdf } : { filename: fileName("Lettre", "md"), data: lastText }));
+$("#dSave2").onclick = () => dl({ filename: fileName(baseName(), "md"), data: lastText });
 
 // ---------- offres ----------
-const srcLabel = u => /linkedin\./.test(u) ? "LinkedIn" : /indeed\./.test(u) ? "Indeed" : /apec\./.test(u) ? "Apec" : /welcometothejungle/.test(u) ? "WTTJ" : /francetravail|pole-emploi/.test(u) ? "France Travail" : "Lien";
+const srcLabel = u => /linkedin\./.test(u) ? "LinkedIn" : /indeed\./.test(u) ? "Indeed" : /apec\./.test(u) ? "Apec" : /free-work\./.test(u) ? "Free-Work" : /welcometothejungle/.test(u) ? "WTTJ" : /francetravail|pole-emploi/.test(u) ? "France Travail" : "Lien";
 function toJob(id, d){
   const url = String(d.url || "").trim();
-  return { docId: id, t: ["A","B","C"].includes(d.t) ? d.t : "B", p: String(d.p || PISTES()[0]),
+  return { docId: id, t: ["A","B","C"].includes(d.t) ? d.t : "B", p: String(d.p || PISTES()[0]), pos: String(d.pos || ""), voie: String(d.voie || ""),
     title: String(d.title || "Sans titre"), co: String(d.co || ""), loc: String(d.loc || "n.c."), sal: String(d.sal || "n.c."),
     date: String(d.date || ""), note: String(d.note || ""), ad: String(d.ad || ""), pending: !!d.pending, createdAt: String(d.createdAt || ""),
     s: /^https?:\/\//.test(url) ? [[srcLabel(url), url]] : [] };
@@ -871,9 +924,9 @@ async function deleteJob(j){
 }
 
 const addDrawer = $("#addDrawer");
-let editing = null;
+let editing = null, fillMeta = {};
 function openAdd(job){
-  editing = job || null;
+  editing = job || null; fillMeta = {};
   ["aAd","aUrl","aT","aCo","aLoc","aSal","aDate","aNote"].forEach(id => $("#" + id).value = "");
   $("#aR").value = "B"; $("#aP").value = PISTES()[0]; $("#aMsg").textContent = ""; $("#aFillMsg").textContent = "";
   if (editing){
@@ -904,9 +957,12 @@ $("#aFill").onclick = async () => {
     const r = await sample.json(`Extrais les informations de cette offre d'emploi et classe-la pour ${NOM()}.
 PROFIL (résumé) : ${String(PROF.titre || "")}. ${String(PROF.source || "").slice(0, 2500)}
 CRITÈRES DE RECHERCHE : ${String(PROF.criteres || "non précisés")}
-Rang : A = bonne adéquation avec le profil et les critères (niveau au moins égal, zone et salaire compatibles) ; B = intéressant mais à vérifier ; C = hors critères (niveau inférieur, autre métier, zone ou salaire hors cible).
+Rang : A = bonne adéquation avec le profil et les critères (niveau au moins égal, zone et salaire compatibles) ; B = intéressant mais à vérifier ; C = hors critères (niveau inférieur, autre métier, zone ou salaire hors cible).${POSITIONS().length ? `
+Positionnement : choisis exactement l'une de ces valeurs : ${POSITIONS().map(x => x.nom).join(" | ")} | Hors positionnement. Une offre hors positionnement perd un rang (A devient B, B devient C).${PROF.horsPositionnement ? " Sont hors positionnement : " + PROF.horsPositionnement + "." : ""}` : ""}${FREE() ? `
+Voie : CDI, Freelance ou CDI ou freelance. Une mission n'est jamais déclassée parce que c'est une mission.${PROF.freelance.tjmA ? " Rang A en freelance à partir de " + PROF.freelance.tjmA + " €/j." : ""}${PROF.freelance.tjmB ? " Rang B à partir de " + PROF.freelance.tjmB + " €/j, C en dessous." : ""}` : ""}${PROF.metiersCoeur ? `
+Métiers de cœur (jamais écartés mécaniquement, au moins B sauf poste manifestement junior) : ${PROF.metiersCoeur}.` : ""}
 Piste : choisis exactement l'une de ces valeurs : ${PISTES().join(" | ")}.
-Réponds UNIQUEMENT avec un JSON : {"title":"","co":"","loc":"ville · mode de travail","sal":"fourchette ou n.c.","date":"JJ/MM ou vide","p":"","t":"A | B | C","note":"une phrase franche : pourquoi ce rang"}
+Réponds UNIQUEMENT avec un JSON : {"title":"","co":"","loc":"ville · mode de travail","sal":"fourchette, TJM ou n.c.","date":"JJ/MM ou vide","p":"","t":"A | B | C","pos":"","voie":"","note":"une phrase franche : pourquoi ce rang"}
 
 ANNONCE :
 ${txt.slice(0, 12000)}`, { modelTier: "quick", cache: false });
@@ -915,6 +971,9 @@ ${txt.slice(0, 12000)}`, { modelTier: "quick", cache: false });
       if (r.sal) $("#aSal").value = r.sal; if (r.date) $("#aDate").value = r.date; if (r.note) $("#aNote").value = r.note;
       if (PISTES().includes(r.p)) $("#aP").value = r.p;
       if (["A","B","C"].includes(r.t)) $("#aR").value = r.t;
+      fillMeta = {};
+      if (r.pos && POSITIONS().map(x => x.nom).concat("Hors positionnement").includes(r.pos)) fillMeta.pos = r.pos;
+      if (FREE() && ["CDI","Freelance","CDI ou freelance"].includes(r.voie)) fillMeta.voie = r.voie;
       $("#aFillMsg").textContent = "Champs remplis : vérifie-les avant d'enregistrer.";
     }
   } catch (e) { $("#aFillMsg").textContent = ERR[e && e.code] || "Lecture impossible : remplis les champs à la main."; }
@@ -936,6 +995,9 @@ $("#aSave").onclick = async () => {
     date: $("#aDate").value.trim(), url: $("#aUrl").value.trim(), p: $("#aP").value, t: $("#aR").value, note: $("#aNote").value.trim(),
     ad: $("#aAd").value.trim().slice(0, 60000), createdAt: (editing && editing.createdAt) || new Date().toISOString(), pending: false };
   if (!d.title || !d.co){ $("#aMsg").textContent = "L'intitulé et l'entreprise sont obligatoires."; return; }
+  if (editing && editing.pos) d.pos = editing.pos;
+  if (editing && editing.voie) d.voie = editing.voie;
+  Object.assign(d, fillMeta);
   $("#aSave").disabled = true;
   try {
     await putOffer(editing ? editing.docId : null, d);
@@ -954,6 +1016,9 @@ function openProf(){
   $("#pVille").value = PROF.ville || ""; $("#pCouleur").value = /^#[0-9a-f]{6}$/i.test(PROF.couleur || "") ? PROF.couleur : "#0f6b5c";
   $("#pSource").value = PROF.source || ""; $("#pAjouts").value = PROF.ajouts || ""; $("#pCriteres").value = PROF.criteres || "";
   $("#pPistes").value = (PROF.pistes || []).join(", "); $("#pLocal").value = (PROF.local || []).join(", ");
+  const F = PROF.freelance || {};
+  $("#pPos").value = posToText(); $("#pHors").value = PROF.horsPositionnement || ""; $("#pCoeur").value = PROF.metiersCoeur || "";
+  $("#pFree").checked = !!F.actif; $("#pFreeStruct").value = F.structure || ""; $("#pTjmA").value = F.tjmA || ""; $("#pTjmB").value = F.tjmB || "";
   photoDraft = null; showPhoto(PHOTO); $("#pMsg").textContent = ""; $("#pPhoto").value = "";
   $("#scrim").hidden = false; profDrawer.hidden = false; $("#pNom").focus();
 }
@@ -979,7 +1044,10 @@ $("#pSave").onclick = async () => {
     nom: $("#pNom").value.trim(), titre: $("#pTitre").value.trim(), email: $("#pEmail").value.trim(), tel: $("#pTel").value.trim(),
     ville: $("#pVille").value.trim(), couleur: $("#pCouleur").value, source: $("#pSource").value.trim().slice(0, 120000),
     ajouts: $("#pAjouts").value.trim().slice(0, 40000), criteres: $("#pCriteres").value.trim().slice(0, 8000),
-    pistes: splitList($("#pPistes").value).slice(0, 8), local: splitList($("#pLocal").value).slice(0, 30), updatedAt: new Date().toISOString()
+    pistes: splitList($("#pPistes").value).slice(0, 8), local: splitList($("#pLocal").value).slice(0, 30),
+    positionnements: textToPos($("#pPos").value), horsPositionnement: $("#pHors").value.trim().slice(0, 2000), metiersCoeur: $("#pCoeur").value.trim().slice(0, 2000),
+    freelance: { actif: $("#pFree").checked, structure: $("#pFreeStruct").value.trim().slice(0, 200), tjmA: Number($("#pTjmA").value) || 0, tjmB: Number($("#pTjmB").value) || 0 },
+    updatedAt: new Date().toISOString()
   });
   $("#pSave").disabled = true; $("#pMsg").textContent = "Enregistrement…";
   try {
@@ -1018,6 +1086,10 @@ function start(){
     db.collection("generations").onSnapshot(snap => {
       const g = {}; snap.docs.forEach(d => { g[d.id] = d.data() || {}; }); GEN = g;
       if (cur && !$("#drawer").hidden && !genBusy && !letterDirty && document.activeElement !== $("#dOut")) restoreSaved();
+    }, () => {});
+    db.collection("meta").doc("collecte").onSnapshot(d => {
+      LAST_RUN = d.exists ? String((d.data() || {}).lastRun || "") : "";
+      stats();
     }, () => {});
   }).catch(() => loadLocal());
 }
