@@ -2,10 +2,11 @@
 
 Un tableau de bord personnel pour ta recherche d'emploi, piloté avec Claude :
 
-- les offres de LinkedIn, de l'Apec et d'Indeed sont **collectées** automatiquement à partir de tes alertes, **sans doublons** ;
-- chaque offre est **classée** A (priorité), B (à examiner) ou C (écartée), selon **tes** critères ;
+- les offres de LinkedIn, de l'Apec et d'Indeed sont **collectées** automatiquement à partir de tes alertes et de recherches directes, **sans doublons** ;
+- chaque offre est **classée** A (priorité), B (à examiner) ou C (écartée), selon **tes** critères et **ton positionnement** ;
 - tu **suis** tes candidatures : à postuler, postulé, entretien, refus, avec les dates ;
-- tu génères en un clic une **lettre de motivation** et un **CV adapté** à l'offre (PDF), à partir de ta base de connaissance : ton CV et ton profil LinkedIn fusionnés, sans rien inventer.
+- tu génères en un clic une **lettre de motivation** et un **CV adapté** à l'offre (PDF), à partir de ta base de connaissance : ton CV et ton profil LinkedIn fusionnés, sans rien inventer ;
+- si tu cherches aussi des missions, tu génères un **dossier de mission** en PDF.
 
 ---
 
@@ -72,15 +73,16 @@ Ensuite, **une tournée tous les 1 à 3 jours** suffit. Elle lit les nouvelles a
 - Les **nouvelles offres** sont en tête pendant 3 jours, ou jusqu'à ce que tu leur donnes un suivi.
 - Donne un **suivi** à chaque offre : À postuler, Postulé (la date du jour s'inscrit), Entretien, Refus, Écartée. Les offres écartées ou refusées disparaissent de la liste ; le menu Suivi permet de les revoir.
 - **Lettre** / **CV** : colle le texte complet de l'annonce s'il manque, ajoute des consignes si besoin (« 1 500 caractères max », « insiste sur tel projet »), clique sur **Générer**, relis, puis télécharge le PDF. Chaque version reste enregistrée pour l'offre.
+- **Dossier** (si tu as activé la voie freelance dans ton profil) : même principe, pour une mission remise à un client ou à un intermédiaire.
 - **+ Ajouter une annonce** : une offre trouvée ailleurs. Colle le lien seul (la prochaine tournée complétera la fiche) ou le texte de l'annonce, et Claude remplit les champs.
-- **Mon profil** : ta base de connaissance, tes critères, ta photo. Tu peux corriger directement.
+- **Mon profil** : ta base de connaissance, tes critères, tes positionnements, la voie freelance, ta photo. Tu peux corriger directement.
 
 **Les commandes**
 
 | Commande | Où | Pour quoi |
 |---|---|---|
 | `/radar` | Panneau Claude de Chrome | Tournée de collecte |
-| `/radar-profil` | N'importe quelle conversation | Ajouter un chiffre, une mission, une formation ; changer un critère |
+| `/radar-profil` | N'importe quelle conversation | Ajouter un chiffre, une mission, une formation ; changer un critère ou un positionnement |
 | `/radar-alertes` | N'importe quelle conversation | Revoir ou resserrer tes alertes |
 
 **Astuce** : un contact t'envoie une offre par mail ? Range ce mail dans le libellé Gmail « Radar » : la prochaine tournée l'ajoutera, même hors de tes critères.

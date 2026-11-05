@@ -14,7 +14,7 @@ Ton : tutoiement, direct, exigeant, chaleureux sans flatterie. Pas de jargon tec
 ## Cas particulier : page déjà installée (mise à jour du plugin)
 
 Avant tout, `Artifact` action `list` : si une page « Radar candidatures » existe et que son `profil/main` est rempli, propose au membre :
-- **Mettre à jour la page seulement** : republie le modèle à la même adresse (voir étape 6, point 2), sans toucher au profil. C'est terminé.
+- **Mettre à jour la page seulement** : republie le modèle à la même adresse (voir étape 6, point 2), sans toucher au profil. Si `positionnements` ou `freelance` manquent au profil, dis-le en une ligne et propose `/radar-profil` pour les compléter : la page fonctionne sans eux, mais sans garde-fou de positionnement ni dossier de mission. C'est terminé.
 - **Refaire l'installation complète** : déroule les 7 étapes. Le profil existant sert de point de départ et n'est remplacé qu'après validation.
 
 ## Étape 1 sur 7 · Vérifier les prérequis
@@ -98,6 +98,10 @@ Questions à poser (regroupe-les, deux ou trois messages au plus) :
 5. **Niveau visé** : intitulés acceptables et intitulés **en dessous** de son niveau (qui iront en C).
 6. **Pistes métier** : 2 à 4 familles de postes (ex. « Direction financière », « Contrôle de gestion », « Transformation »). Ce seront les catégories de la page. Noms courts.
 7. **Exclusions** : secteurs, métiers ou entreprises à écarter d'office.
+8. **Positionnements** : un recruteur décide en 12 secondes et doit comprendre ce que le membre vend. Aide-le à en formuler **deux au plus** (trois en dernier recours), chacun avec un nom court, ce qu'il couvre et les preuves tirées de sa base. Chaque lettre et chaque CV n'en portera qu'un seul. S'il en propose davantage, dis franchement que le message se brouille. Ces preuves viennent de la base validée à l'étape 3, jamais d'ailleurs.
+9. **Hors positionnement** : les postes qu'il pourrait occuper mais qui brouillent son message. Une offre de ce type perdra un rang.
+10. **Métiers de cœur** : les intitulés où sa légitimité est la plus forte, jamais écartés mécaniquement même sans salaire affiché.
+11. **Freelance** : s'il cherche aussi des missions : structure de facturation (facultative), TJM minimum pour un rang A, TJM minimum pour un rang B. Sans réponse positive, la voie reste désactivée.
 
 Rédige les **critères** en un texte court et structuré, à valider :
 
@@ -147,6 +151,10 @@ Demande ce qui apparaîtra en en-tête des CV et lettres :
       "criteres": "<critères, étape 4>",
       "pistes": ["…", "…"],
       "local": ["…", "…"],
+      "positionnements": [{"nom": "…", "detail": "ce qu'il couvre et les preuves"}],
+      "horsPositionnement": "…",
+      "metiersCoeur": "…",
+      "freelance": {"actif": false, "structure": "", "tjmA": 0, "tjmB": 0},
       "updatedAt": "<maintenant, ISO 8601 UTC avec Z>"}
      ```
    - La base doit rester sous 200 000 caractères (largement suffisant).
@@ -170,7 +178,7 @@ Demande ce qui apparaîtra en en-tête des CV et lettres :
 >
 > Cette première tournée ne dépend pas encore des alertes : elle parcourt directement tes recherches sur les 7 derniers jours, classe les offres A, B et C, et remplit ta page. Compte 15 à 30 minutes. Ensuite, une tournée tous les 1 à 3 jours suffit : elle lira tes alertes Gmail et ne reprendra que les nouveautés.
 
-3. Rappelle les trois commandes : `/radar` (tournée), `/radar-profil` (compléter la base en conversation), `/radar-alertes` (revoir les alertes).
+3. Rappelle les trois commandes : `/radar` (tournée), `/radar-profil` (compléter la base, les critères ou le positionnement en conversation), `/radar-alertes` (revoir les alertes).
 
 ## Règles permanentes
 

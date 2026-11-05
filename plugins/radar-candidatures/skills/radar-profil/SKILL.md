@@ -1,6 +1,6 @@
 ---
 name: radar-profil
-description: Compléter ou corriger la base de connaissance et les critères du Radar candidatures en conversation (nouveau chiffre, mission oubliée, formation, changement de zone ou de salaire). À lancer avec /radar-profil.
+description: Compléter ou corriger la base de connaissance, les critères et le positionnement du Radar candidatures en conversation (nouveau chiffre, mission oubliée, formation, changement de zone ou de salaire, voie freelance). À lancer avec /radar-profil.
 ---
 
 # /radar-profil
@@ -10,7 +10,7 @@ La base de connaissance (`profil/main` de la page radar) est la **seule** source
 ## Déroulé
 
 1. **Trouver la page** : `Artifact` action `list`, artifact « Radar candidatures » (demander lequel s'il y en a plusieurs ; aucun → `/radar-installation`).
-2. **Lire** `profil/main` avec `ArtifactData` `get` et noter sa version.
+2. **Lire** `profil/main` avec `ArtifactData` `get` et noter sa version. **Profil ancien** : si `positionnements` ou `freelance` manquent, propose d'abord de les compléter (voir point 4), en une question ; le membre peut refuser et passer à ce qu'il était venu faire.
 3. **Recueillir** ce que le membre veut ajouter ou changer. S'il ne sait pas quoi ajouter, l'aider avec des questions ciblées sur les points faibles visibles dans la base :
    - résultats non chiffrés ;
    - périmètre (budget, équipe, nombre de sites) absent ;
@@ -23,6 +23,9 @@ La base de connaissance (`profil/main` de la page radar) est la **seule** source
    - **Correction** (un fait de `source` est faux : date, intitulé, chiffre) → modifier `source` à l'endroit exact. Montrer au membre l'avant et l'après.
    - **Nouvelle expérience, formation, certification** → l'insérer dans `source`, à sa place chronologique, au format existant.
    - **Critère de recherche** (zone, salaire, contrat, niveau, exclusion, règle de rang) → modifier `criteres` ; si les pistes ou les villes proches changent, mettre à jour `pistes` ou `local`. Prévenir : changer les pistes ne reclasse pas les offres déjà présentes.
+   - **Positionnement** → `positionnements` : liste de `{"nom", "detail"}`, deux conseillés, trois au plus. `detail` dit ce qu'il couvre et cite des preuves de la base. Au-delà de trois, le dire franchement : le message se brouille. Une preuve absente de la base n'y entre pas. Prévenir : les offres déjà présentes ne sont pas reclassées.
+   - **Hors positionnement ou métiers de cœur** → `horsPositionnement`, `metiersCoeur` : texte court, intitulés ou familles de postes.
+   - **Freelance** → `freelance` : `{"actif", "structure", "tjmA", "tjmB"}`. Activer la voie fait apparaître le bouton « Dossier » sur la page. Pour ajouter les recherches de missions, proposer `/radar-alertes`.
 5. **Refuser poliment** ce qui n'a pas sa place :
    - données sensibles inutiles au recrutement (santé, situation familiale, numéro de sécurité sociale, âge) ;
    - embellissement non étayé (« mets que j'ai managé 20 personnes » alors que la base dit 5) : le dire franchement et proposer une formulation exacte et valorisante.
